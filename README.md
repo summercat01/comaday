@@ -1,46 +1,49 @@
-# Getting Started with Create React App
+# 코마데이 (comaDay)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React(TypeScript) 기반의 코인 랭킹/전송/로그인 데모 프로젝트입니다.
 
-## Available Scripts
+## 주요 기능
+- 회원 로그인 (아이디/비밀번호)
+- 실시간 랭킹 테이블(더미 데이터)
+- 코인 전송 모달 (회원 번호로 전송)
+- 컴포넌트/스타일 구조화, 백엔드 연동을 고려한 설계
 
-In the project directory, you can run:
+## 실행 방법
 
-### `npm start`
+### 1. NPM 사용
+```bash
+git clone https://github.com/jumokcom/comaday.git
+cd comaday
+npm install
+npm start
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 2. Yarn 사용
+```bash
+git clone https://github.com/jumokcom/comaday.git
+cd comaday
+yarn install
+yarn start
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 폴더 구조
+```
+comaday/
+├─ public/
+│  └─ index.html
+├─ src/
+│  ├─ App.tsx
+│  ├─ App.css
+│  ├─ index.tsx
+│  └─ react-app-env.d.ts
+├─ package.json
+├─ tsconfig.json
+└─ README.md
+```
 
-### `npm test`
+## 백엔드 연동 안내
+- users, 로그인, 코인 전송, 랭킹 등은 실제 서버 API와 연동 시 주석 참고하여 수정하면 됩니다.
+- 자세한 내용은 `src/App.tsx`의 `[백엔드 연동]` 주석 참고
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
+문의: jumokcom (github)
