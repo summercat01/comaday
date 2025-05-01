@@ -1,3 +1,82 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+  background: #fff;
+}
+
+.app {
+  max-width: 100%;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 0 20px 0;
+  padding-bottom: 10px;
+  border-bottom: 4px solid #000;
+}
+
+.user-info-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 2px solid #000;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.user-info-item {
+  display: flex;
+  align-items: center;
+}
+
+.user-info-divider {
+  margin: 0 15px;
+  width: 1px;
+  height: 20px;
+  background: #000;
+}
+
+.ranking-section {
+  border: 2px solid #000;
+  margin-top: 20px;
+}
+
+.ranking-header {
+  background: #f0f0f0;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #000;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-table th {
+  background: #f0f0f0;
+  padding: 12px;
+  text-align: center;
+  border-bottom: 2px solid #000;
+}
+
+.ranking-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.ranking-table tr:last-child td {
+  border-bottom: none;
+}
+
 .main-container {
   max-width: 800px;
   margin: 0 auto;
@@ -8,21 +87,11 @@
   box-sizing: border-box;
 }
 
-.title {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 20px;
-  border-bottom: 8px solid #000;
-  padding-bottom: 8px;
-  letter-spacing: 2px;
-}
-
 .user-info {
   display: flex;
   justify-content: space-between;
   margin: 20px 0 16px 0;
-  padding: 12px 16px;
+  padding: 12px 8px;
   background: #fff;
   border: 4px solid #000;
   font-size: 1rem;
@@ -31,12 +100,12 @@
 
 .user-info span {
   text-align: center;
-  padding: 0 8px;
-  border-right: 2px solid #000;
+  padding: 0;
+  border-right: 1px solid #000;
 }
 
 .user-info span:first-child {
-  width: 80px;
+  width: 70px;
   flex-shrink: 0;
 }
 
@@ -44,12 +113,12 @@
   flex: 2;
   text-align: center;
   min-width: 200px;
-  padding: 0 16px;
+  padding: 0 4px;
   white-space: nowrap;
 }
 
 .user-info span:last-child {
-  width: 80px;
+  width: 70px;
   flex-shrink: 0;
   border-right: none;
 }
@@ -89,29 +158,31 @@
 .ranking-table td:nth-child(1) {
   width: 15%;
   letter-spacing: 1px;
+  padding: 4px;
 }
 
 .ranking-table td:nth-child(2) {
   width: 60%;
   text-align: left;
+  padding: 4px 8px;
 }
 
 .ranking-table td:nth-child(3) {
   width: 25%;
+  padding: 4px;
 }
 
 .coin-btn {
   display: block;
   width: 320px;
-  margin: 32px auto 0 auto;
-  padding: 18px 0;
+  margin: 20px auto 0 auto;
+  padding: 15px 0;
   font-size: 1.2rem;
   font-weight: bold;
-  border: 4px solid #000;
+  border: 2px solid #000;
   background: #fff;
   cursor: pointer;
   border-radius: 0;
-  transition: background 0.2s;
 }
 
 .coin-btn:hover {
