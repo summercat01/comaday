@@ -1,7 +1,7 @@
 .main-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 30px 20px 0 20px;
+  padding: 20px 16px 0 16px;
   background: #fff;
   min-height: 100vh;
   font-family: 'Noto Sans KR', sans-serif;
@@ -10,7 +10,7 @@
 
 .title {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: bold;
   margin-bottom: 20px;
   border-bottom: 8px solid #000;
@@ -21,21 +21,20 @@
 .user-info-row {
   display: flex;
   justify-content: space-between;
-  margin: 24px 0 16px 0;
+  margin: 20px 0 16px 0;
+  gap: 12px;
 }
 
 .user-info-box {
   flex: 1;
   border: 4px solid #000;
-  margin: 0 6px;
-  padding: 12px 0;
+  margin: 0;
+  padding: 12px 8px;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   background: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .ranking-table-container {
@@ -46,12 +45,13 @@
   width: 100%;
   border-collapse: collapse;
   background: #f7f7f7;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  table-layout: fixed;
 }
 
 .ranking-title {
   background: #bdbdbd;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   text-align: center;
   height: 40px;
@@ -61,15 +61,24 @@
   border: 1px solid #bdbdbd;
   text-align: center;
   height: 36px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
+  padding: 4px 8px;
 }
 
 .ranking-table th {
   background: #e0e0e0;
   font-weight: 600;
+}
+
+.ranking-table td:nth-child(1) {
+  width: 15%;
+}
+
+.ranking-table td:nth-child(2) {
+  width: 60%;
+}
+
+.ranking-table td:nth-child(3) {
+  width: 25%;
 }
 
 .coin-btn {
@@ -197,37 +206,36 @@
 .login-box {
   border: 6px solid #111;
   margin-bottom: 36px;
-  padding: 28px 18px;
+  padding: 20px 18px;
   background: #fff;
   text-align: left;
-  font-size: 2rem;
+  font-size: 1.6rem;
   box-sizing: border-box;
   width: 100%;
-  overflow: hidden;
 }
 
 .login-inline-box {
   display: flex;
   align-items: center;
   padding: 12px 18px;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   flex-wrap: nowrap;
 }
 
 .login-label {
-  width: 120px;
-  font-size: 1.5rem;
+  width: 80px;
+  font-size: 1.2rem;
   margin-bottom: 0;
   flex-shrink: 0;
 }
 
 .login-input {
-  width: calc(100% - 120px);
-  font-size: 1.5rem;
+  width: calc(100% - 80px);
+  font-size: 1.2rem;
   border: 2px solid #222;
   outline: none;
   background: transparent;
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: 4px;
   transition: border 0.2s;
   flex-shrink: 1;
