@@ -50,19 +50,23 @@ body {
   border: 2px solid var(--color-border);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  text-align: center;
 }
 
 .user-info-item {
   display: flex;
   align-items: center;
+  justify-content: center;
   font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
 }
 
 .user-info-divider {
-  margin: 0 var(--spacing-md);
   width: 1px;
   height: 20px;
   background: var(--color-border);
+  margin: 0 var(--spacing-md);
 }
 
 /* Ranking Section */
@@ -84,18 +88,23 @@ body {
   border-collapse: collapse;
 }
 
-.ranking-table th {
-  background: var(--color-gray);
-  padding: var(--spacing-md);
-  text-align: center;
-  border-bottom: 2px solid var(--color-border);
-  font-weight: 600;
-}
-
+.ranking-table th,
 .ranking-table td {
   padding: var(--spacing-md);
   text-align: center;
   border-bottom: 1px solid var(--color-gray-dark);
+  border-right: 1px solid var(--color-gray-dark);
+}
+
+.ranking-table th:last-child,
+.ranking-table td:last-child {
+  border-right: none;
+}
+
+.ranking-table th {
+  background: var(--color-gray);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .ranking-table tr:last-child td {
@@ -267,11 +276,7 @@ body {
   }
 
   .user-info-box {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-md);
-  }
-
-  .user-info-divider {
-    display: none;
   }
 }
