@@ -11,7 +11,8 @@
   --spacing-lg: 20px;
   --font-size-sm: 0.95rem;
   --font-size-md: 1.2rem;
-  --font-size-lg: 2rem;
+  --font-size-lg: 1.5rem;
+  --max-width: 768px;
 }
 
 /* Reset & Base Styles */
@@ -26,9 +27,9 @@ body {
 
 /* Layout */
 .app {
-  max-width: 100%;
-  margin: 0;
-  padding: var(--spacing-lg);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--spacing-md);
   box-sizing: border-box;
 }
 
@@ -44,35 +45,20 @@ body {
 
 /* User Info Box */
 .user-info-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
   border: 2px solid var(--color-border);
-  padding: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
   text-align: center;
 }
 
 .user-info-item {
+  padding: var(--spacing-md);
+  font-weight: 500;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 500;
-  white-space: nowrap;
-  position: relative;
-  padding: var(--spacing-md);
-}
-
-.user-info-item:nth-child(1) {
-  flex: 0.8;
-}
-
-.user-info-item:nth-child(2) {
-  flex: 1.2;
-}
-
-.user-info-item:nth-child(3) {
-  flex: 0.8;
 }
 
 .user-info-item:not(:last-child)::after {
@@ -109,29 +95,29 @@ body {
 .ranking-table td {
   padding: var(--spacing-md);
   text-align: center;
-  border-bottom: 1px solid var(--color-gray-dark) !important;
-  border-right: 1px solid var(--color-gray-dark) !important;
+  border-bottom: 1px solid var(--color-gray-dark);
+  border-right: 1px solid var(--color-gray-dark);
 }
 
 .ranking-table th:last-child,
 .ranking-table td:last-child {
-  border-right: none !important;
+  border-right: none;
 }
 
 .ranking-table th {
   background: var(--color-gray);
   font-weight: 600;
-  border-bottom: 2px solid var(--color-border) !important;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .ranking-table tr:last-child td {
-  border-bottom: none !important;
+  border-bottom: none;
 }
 
 /* Buttons */
 .coin-btn {
   display: block;
-  width: 320px;
+  width: 100%;
   margin: var(--spacing-lg) auto 0;
   padding: var(--spacing-md) 0;
   font-size: var(--font-size-md);
@@ -197,7 +183,7 @@ body {
 
 .send-btn {
   display: block;
-  width: 200px;
+  width: 100%;
   margin: var(--spacing-lg) auto 0;
   padding: var(--spacing-md) 0;
   font-size: var(--font-size-md);
@@ -267,7 +253,7 @@ body {
 
 .login-btn {
   display: block;
-  width: 200px;
+  width: 100%;
   margin: var(--spacing-lg) auto 0;
   padding: var(--spacing-md) 0;
   font-size: var(--font-size-md);
@@ -283,28 +269,18 @@ body {
   background: var(--color-gray);
 }
 
-/* Media Queries */
-@media (max-width: 768px) {
+/* Desktop Styles */
+@media (min-width: 769px) {
   :root {
-    --spacing-lg: 16px;
-    --spacing-md: 12px;
-    --font-size-lg: 1.5rem;
-    --font-size-md: 1rem;
+    --font-size-lg: 2rem;
   }
 
   .coin-btn,
-  .send-btn,
+  .send-btn {
+    width: 320px;
+  }
+
   .login-btn {
-    width: 100%;
-  }
-
-  .user-info-box {
-    flex-direction: row;
-    gap: var(--spacing-md);
-  }
-
-  .ranking-table th,
-  .ranking-table td {
-    padding: var(--spacing-sm);
+    width: 200px;
   }
 } 
