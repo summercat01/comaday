@@ -1,49 +1,118 @@
-# 코마데이 (comaDay)
+# 코마데이 (ComaDay)
 
-React(TypeScript) 기반의 코인 랭킹/전송/로그인 데모 프로젝트입니다.
+실시간 코인 전송 및 랭킹 관리 시스템
 
-## 주요 기능
-- 회원 로그인 (아이디/비밀번호)
-- 실시간 랭킹 테이블(더미 데이터)
-- 코인 전송 모달 (회원 번호로 전송)
-- 컴포넌트/스타일 구조화, 백엔드 연동을 고려한 설계
+## 프로젝트 소개
 
-## 실행 방법
+코마데이는 팀원들 간의 코인 전송과 랭킹을 실시간으로 관리하는 웹 애플리케이션입니다.
 
-### 1. NPM 사용
+### 주요 기능
+
+- 사용자 인증 (로그인)
+- 실시간 코인 전송
+- 실시간 랭킹 업데이트
+- 사용자 정보 표시
+- 거래 내역 관리
+
+## 기술 스택
+
+### 프론트엔드
+- React
+- TypeScript
+- CSS Variables
+- WebSocket (실시간 통신)
+
+### 백엔드 (구현 예정)
+- RESTful API
+- WebSocket 서버
+- 데이터베이스
+- 트랜잭션 관리
+
+## 시작하기
+
+### 필수 요구사항
+- Node.js 14.0.0 이상
+- npm 또는 yarn
+
+### 설치 및 실행
+
+1. 저장소 클론
 ```bash
-git clone https://github.com/jumokcom/comaday.git
+git clone [repository-url]
 cd comaday
-npm install
-npm start
 ```
 
-### 2. Yarn 사용
+2. 의존성 설치
 ```bash
-git clone https://github.com/jumokcom/comaday.git
-cd comaday
+npm install
+# 또는
 yarn install
+```
+
+3. 개발 서버 실행
+```bash
+npm start
+# 또는
 yarn start
 ```
 
-## 폴더 구조
+## 프로젝트 구조
+
 ```
 comaday/
-├─ public/
-│  └─ index.html
-├─ src/
-│  ├─ App.tsx
-│  ├─ App.css
-│  ├─ index.tsx
-│  └─ react-app-env.d.ts
-├─ package.json
-├─ tsconfig.json
-└─ README.md
+├── public/
+│   └── index.html      # 메인 HTML 파일
+├── src/
+│   ├── App.tsx         # 메인 애플리케이션 컴포넌트
+│   ├── App.css         # 전역 스타일
+│   └── index.tsx       # 애플리케이션 진입점
+└── README.md
 ```
 
-## 백엔드 연동 안내
-- users, 로그인, 코인 전송, 랭킹 등은 실제 서버 API와 연동 시 주석 참고하여 수정하면 됩니다.
-- 자세한 내용은 `src/App.tsx`의 `[백엔드 연동]` 주석 참고
+## API 엔드포인트
 
----
-문의: jumokcom (github)
+### 인증
+- `POST /api/auth/login` - 사용자 로그인
+
+### 사용자
+- `GET /api/users` - 전체 사용자 목록 조회
+- `GET /api/users/{id}` - 특정 사용자 정보 조회
+
+### 거래
+- `POST /api/transactions` - 코인 전송
+- `GET /api/transactions` - 거래 내역 조회
+
+### WebSocket
+- `/ws/transactions` - 실시간 거래 업데이트
+
+## 개발 가이드
+
+### 환경 변수
+```env
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_WS_URL=ws://localhost:8080
+```
+
+### 코드 컨벤션
+- TypeScript strict 모드 사용
+- 함수형 컴포넌트 사용
+- CSS 변수 사용
+- JSDoc 주석 작성
+
+## 기여하기
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 라이선스
+
+이 프로젝트는 MIT 라이선스를 따릅니다.
+
+## 팀원
+
+- 고재우, 나산하
+- 김연지, 김채민
+- 박지성, 이민재
