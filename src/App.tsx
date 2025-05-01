@@ -21,7 +21,7 @@ function CoinTransfer({
       return;
     }
     if (!coin || isNaN(Number(coin)) || Number(coin) <= 0) {
-      alert('보낼 코인 수를 입력해주세요.');
+      alert('보낼 코인을 입력해주세요.');
       return;
     }
     onSendCoin(Number(userId), Number(coin));
@@ -35,7 +35,7 @@ function CoinTransfer({
       <button className="close-btn" onClick={onClose} aria-label="닫기">×</button>
       <h2 className="coin-transfer-title">코인 전송</h2>
       <div className="coin-transfer-box coin-inline-box">
-        <label className="coin-label">사용자 번호:</label>
+        <label className="coin-label">보낼 번호:</label>
         <input
           className="coin-input"
           type="number"
@@ -45,7 +45,7 @@ function CoinTransfer({
         />
       </div>
       <div className="coin-transfer-box coin-inline-box">
-        <label className="coin-label">보낼 코인 수:</label>
+        <label className="coin-label">보낼 코인:</label>
         <input
           className="coin-input"
           type="number"
@@ -87,7 +87,7 @@ function Login({ onLogin }: { onLogin: (user: User) => void }) {
           />
         </div>
         <div className="login-box login-inline-box">
-          <label className="login-label">암호:</label>
+          <label className="login-label">비밀번호:</label>
           <input
             className="login-input"
             type="password"
@@ -158,9 +158,9 @@ function App() {
         <>
           <h1 className="title">코마데이</h1>
           <div className="user-info">
-            <span>회원 번호: {currentUser?.id}</span>
+            <span>번호: {currentUser?.id}</span>
             <span>{currentUser?.name}</span>
-            <span>보유 코인: 100</span>
+            <span>코인: 100</span>
           </div>
           <div className="ranking-table-container">
             <table className="ranking-table">
@@ -171,7 +171,7 @@ function App() {
                 <tr>
                   <th>순위</th>
                   <th>이름</th>
-                  <th>보유 코인</th>
+                  <th>코인</th>
                 </tr>
               </thead>
               <tbody>
