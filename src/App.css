@@ -60,13 +60,18 @@ body {
   font-weight: 500;
   flex: 1;
   white-space: nowrap;
+  position: relative;
 }
 
-.user-info-divider {
+.user-info-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   width: 1px;
   height: 20px;
   background: var(--color-border);
-  margin: 0 var(--spacing-md);
 }
 
 /* Ranking Section */

@@ -48,9 +48,7 @@ interface RankingTableProps {
 const UserInfo: React.FC<UserInfoProps> = ({ user }) => (
   <div className="user-info-box">
     <div className="user-info-item">번호: {user.id}</div>
-    <div className="user-info-divider" />
     <div className="user-info-item">{user.name}</div>
-    <div className="user-info-divider" />
     <div className="user-info-item">코인: {user.coin}</div>
   </div>
 );
