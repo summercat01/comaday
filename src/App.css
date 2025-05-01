@@ -1,18 +1,30 @@
 :root {
-  --color-primary: #000000;
+  --color-primary: #007bff;
+  --color-primary-dark: #0056b3;
   --color-background: #ffffff;
   --color-border: #000000;
   --color-gray: #f0f0f0;
   --color-gray-dark: #bdbdbd;
-  --border-radius: 0px;
+  --color-success: #3c3;
+  --color-success-bg: #efe;
+  --color-success-border: #6f6;
+  --color-error: #c33;
+  --color-error-bg: #fee;
+  --color-error-border: #f66;
+  --color-modal-overlay: rgba(0, 0, 0, 0.5);
+  --border-radius: 4px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
-  --spacing-md: 15px;
-  --spacing-lg: 20px;
-  --font-size-sm: 0.95rem;
-  --font-size-md: 1.2rem;
-  --font-size-lg: 1.5rem;
-  --max-width: 768px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --line-height: 1.5;
+  --max-width: 360px;
+  --modal-width: 90%;
+  --modal-max-width: 400px;
 }
 
 /* Reset & Base Styles */
@@ -26,261 +38,325 @@ body {
 }
 
 /* Layout */
-.app {
+.App {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--spacing-md);
+  padding: var(--spacing-xl);
   box-sizing: border-box;
 }
 
-/* Typography */
-.title {
+.app-title {
   font-size: var(--font-size-lg);
   font-weight: bold;
   text-align: center;
-  margin: 0 0 var(--spacing-lg) 0;
-  padding-bottom: var(--spacing-md);
-  border-bottom: 2px solid var(--color-border);
+  margin: var(--spacing-xl) 0;
+}
+
+.user-section {
+  margin-bottom: 2rem;
+  background: var(--color-background);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-section {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
 }
 
 /* User Info Box */
 .user-info-box {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr;
   border: 2px solid var(--color-border);
-  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  background: var(--color-background);
+}
+
+.user-info-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height);
   text-align: center;
 }
 
-.user-info-item {
-  padding: var(--spacing-md);
-  font-weight: 500;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-info-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 2px;
-  height: 24px;
-  background: var(--color-border);
+.separator {
+  font-weight: bold;
+  margin: 0 var(--spacing-sm);
+  font-size: 1.2em;
 }
 
 /* Ranking Section */
-.ranking-section {
-  border: 2px solid var(--color-border);
-  margin-top: var(--spacing-lg);
+.ranking-container {
+  margin-top: var(--spacing-xl);
 }
 
-.ranking-header {
-  background: var(--color-gray);
-  padding: var(--spacing-md);
-  text-align: center;
+.ranking-title {
+  font-size: 1.5em;
   font-weight: bold;
-  border-bottom: 2px solid var(--color-border);
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
 }
 
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid var(--color-border);
 }
 
 .ranking-table th,
 .ranking-table td {
+  border: 1px solid var(--color-border);
   padding: var(--spacing-md);
   text-align: center;
-  border-bottom: 1px solid var(--color-gray-dark);
-  border-right: 1px solid var(--color-gray-dark);
-}
-
-.ranking-table th:last-child,
-.ranking-table td:last-child {
-  border-right: none;
 }
 
 .ranking-table th {
-  background: var(--color-gray);
-  font-weight: 600;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.ranking-table tr:last-child td {
-  border-bottom: none;
+  background-color: var(--color-gray);
+  font-weight: bold;
 }
 
 /* Buttons */
-.coin-btn {
+.coin-transfer-btn {
   display: block;
   width: 100%;
-  margin: var(--spacing-lg) auto 0;
-  padding: var(--spacing-md) 0;
-  font-size: var(--font-size-md);
-  font-weight: bold;
-  border: 2px solid var(--color-border);
-  background: var(--color-background);
-  cursor: pointer;
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+  font-size: var(--font-size-lg);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
   border-radius: var(--border-radius);
-  transition: background-color 0.2s ease;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.coin-btn:hover {
-  background: var(--color-gray);
+.coin-transfer-btn:hover {
+  background-color: var(--color-primary-dark);
 }
 
 /* Modal Styles */
-.coin-transfer-modal {
+.modal-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 500px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.coin-transfer-modal {
+  position: relative;
+  width: var(--modal-width);
+  max-width: var(--modal-max-width);
   background: var(--color-background);
   border: 2px solid var(--color-border);
-  padding: var(--spacing-lg);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-xl);
   box-sizing: border-box;
+  z-index: 1001;
 }
 
 .coin-transfer-title {
-  font-size: var(--font-size-lg);
+  font-size: 1.5em;
   font-weight: bold;
   text-align: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 30px;
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--color-border);
 }
 
-.coin-transfer-box {
-  border: 2px solid var(--color-border);
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  overflow: hidden;
+.coin-transfer-form-group {
+  margin-bottom: 25px;
 }
 
-.coin-label {
-  min-width: 100px;
-  font-size: var(--font-size-md);
-  margin-right: var(--spacing-md);
-}
-
-.coin-input {
-  width: 100%;
-  font-size: var(--font-size-md);
-  border: none;
-  outline: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  box-sizing: border-box;
-  background: transparent;
-}
-
-.send-btn {
+.coin-transfer-form-group label {
   display: block;
+  margin-bottom: var(--spacing-md);
+  font-size: 1.1em;
+}
+
+.coin-transfer-select,
+.coin-transfer-input {
   width: 100%;
-  margin: var(--spacing-lg) auto 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  font-size: var(--font-size-md);
+  box-sizing: border-box;
+}
+
+.coin-transfer-button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+.coin-transfer-submit,
+.coin-transfer-cancel {
+  width: 48%;
   padding: var(--spacing-md) 0;
   font-size: var(--font-size-md);
-  font-weight: bold;
+  cursor: pointer;
   border: 2px solid var(--color-border);
-  background: var(--color-background);
-  cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: background-color 0.2s ease;
+  text-align: center;
 }
 
-.send-btn:hover {
-  background: var(--color-gray);
+.coin-transfer-submit {
+  background-color: var(--color-border);
+  color: white;
 }
 
-.close-btn {
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  background: none;
-  border: none;
-  font-size: var(--font-size-lg);
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
+.coin-transfer-cancel {
+  background-color: var(--color-background);
+  color: var(--color-border);
 }
 
 /* Login Modal */
 .login-modal {
-  width: 90%;
-  max-width: 400px;
-  margin: var(--spacing-lg) auto;
-  padding: var(--spacing-lg);
-  background: var(--color-background);
-  border: 2px solid var(--color-border);
+  padding: var(--spacing-xl);
 }
 
 .login-title {
-  font-size: var(--font-size-lg);
-  font-weight: bold;
   text-align: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
-.login-box {
-  margin-bottom: var(--spacing-lg);
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
-.login-inline-box {
+.login-input-row {
   display: flex;
   align-items: center;
-  margin-bottom: var(--spacing-md);
 }
 
-.login-label {
-  width: 80px;
-  font-size: var(--font-size-md);
+.login-input-row label {
+  width: 70px;
 }
 
-.login-input {
-  flex: 1;
-  font-size: var(--font-size-md);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 2px solid var(--color-border);
-  border-radius: var(--border-radius);
+.login-input-row input {
+  width: 200px;
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border);
 }
 
-.login-btn {
-  display: block;
-  width: 100%;
-  margin: var(--spacing-lg) auto 0;
-  padding: var(--spacing-md) 0;
-  font-size: var(--font-size-md);
-  font-weight: bold;
-  border: 2px solid var(--color-border);
+.login-form button {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
   background: var(--color-background);
   cursor: pointer;
-  border-radius: var(--border-radius);
-  transition: background-color 0.2s ease;
 }
 
-.login-btn:hover {
-  background: var(--color-gray);
+/* Message Box */
+.message-box {
+  position: fixed;
+  top: var(--spacing-xl);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-lg);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+}
+
+.message-box.error {
+  background-color: var(--color-error-bg);
+  border: 2px solid var(--color-error-border);
+  color: var(--color-error);
+}
+
+.message-box.success {
+  background-color: var(--color-success-bg);
+  border: 2px solid var(--color-success-border);
+  color: var(--color-success);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 360px) {
+  .App {
+    padding: var(--spacing-md);
+    max-width: 100%;
+  }
+  
+  .app-title {
+    font-size: 22px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .coin-transfer-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .coin-transfer-modal {
+    width: 95%;
+    padding: var(--spacing-xl);
+  }
+
+  .login-modal {
+    padding: var(--spacing-lg);
+  }
+
+  .login-input-row input {
+    width: 160px;
+  }
 }
 
 /* Desktop Styles */
 @media (min-width: 769px) {
   :root {
     --font-size-lg: 2rem;
+    --max-width: 800px;
   }
 
-  .coin-btn,
-  .send-btn {
-    width: 320px;
+  .App {
+    padding: var(--spacing-xl);
   }
 
-  .login-btn {
-    width: 200px;
+  .coin-transfer-modal {
+    max-width: 500px;
   }
+}
+
+/* Hover Effects */
+.coin-transfer-submit:hover {
+  opacity: 0.9;
+}
+
+.coin-transfer-cancel:hover {
+  background-color: var(--color-gray);
+}
+
+.login-form button:hover {
+  background-color: var(--color-gray);
+}
+
+/* Focus Styles */
+input:focus,
+select:focus,
+button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 } 

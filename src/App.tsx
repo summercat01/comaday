@@ -1,110 +1,207 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
 
 /**
- * @typedef User
- * @description 사용자 정보 타입
+ * @fileoverview 코마데이(ComaDay) - 실시간 코인 전송 및 랭킹 관리 시스템
+ * 
+ * 백엔드 개발자를 위한 가이드:
+ * 1. API 엔드포인트 구현 필요사항:
+ *    - POST /api/auth/login: 사용자 로그인
+ *    - GET /api/users: 전체 사용자 목록 조회
+ *    - GET /api/users/{id}: 특정 사용자 정보 조회
+ *    - POST /api/transactions: 코인 전송
+ *    - GET /api/transactions: 거래 내역 조회
+ * 
+ * 2. 실시간 업데이트 필요사항:
+ *    - WebSocket 연결 필요 (/ws/transactions)
+ *    - 실시간 코인 전송 시 전체 사용자에게 알림
+ *    - 랭킹 변동 시 실시간 업데이트
+ * 
+ * 3. 데이터 유효성 검사:
+ *    - 코인 전송 시 잔액 확인
+ *    - 중복 전송 방지
+ *    - 동시성 제어
+ */
+
+// Types
+/**
+ * @interface User
+ * @description 사용자 정보 인터페이스
  * @property {number} id - 사용자 고유 식별자
- * @property {string} name - 사용자 이름 (쉼표로 구분된 복수의 이름 가능)
+ * @property {string} name - 사용자 이름 (팀원 이름)
  * @property {number} coin - 보유 코인 수량
  * 
  * @example
+ * // API Response 예시
  * {
  *   "id": 1,
  *   "name": "고재우, 나산하",
  *   "coin": 100
  * }
  */
-type User = {
+interface User {
   id: number;
   name: string;
   coin: number;
+}
+
+/**
+ * @interface MessageContextType
+ * @description 메시지 표시 컨텍스트
+ * @note 백엔드에서 에러 응답 시 message 필드를 포함해야 함
+ */
+interface MessageContextType {
+  message: { text: string; type: 'error' | 'success' } | null;
+  showError: (text: string) => void;
+  showSuccess: (text: string) => void;
+  clearMessage: () => void;
+}
+
+/**
+ * @interface UserContextType
+ * @description 사용자 관리 컨텍스트
+ * @note 백엔드 API와 연동 시 이 인터페이스의 메서드들이 API 호출을 수행
+ */
+interface UserContextType {
+  currentUser: User | null;
+  users: User[];
+  login: (user: User) => void;
+  logout: () => void;
+  sendCoin: (toUserId: number, amount: number) => Promise<Result<CoinTransferEvent>>;
+}
+
+/**
+ * @interface CoinTransferEvent
+ * @description 코인 전송 이벤트 데이터 구조
+ * @note WebSocket 이벤트 타입으로 사용됨
+ * 
+ * @example
+ * // WebSocket 메시지 예시
+ * {
+ *   "type": "COIN_TRANSFER",
+ *   "data": {
+ *     "fromUser": { "id": 1, "name": "고재우, 나산하", "coin": 90 },
+ *     "toUser": { "id": 2, "name": "김연지, 김채민", "coin": 110 },
+ *     "amount": 10
+ *   }
+ * }
+ */
+interface CoinTransferEvent {
+  type: 'COIN_TRANSFER';
+  data: {
+    fromUser: User;
+    toUser: User;
+    amount: number;
+  };
+}
+
+/**
+ * @interface Result
+ * @description API 응답 결과 인터페이스
+ * @template T - 응답 데이터 타입
+ * 
+ * @example
+ * // API 응답 예시
+ * {
+ *   "success": true,
+ *   "data": { ... },
+ *   "message": "성공적으로 처리되었습니다."
+ * }
+ */
+interface Result<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+/**
+ * @const MOCK_USERS
+ * @description 목업 사용자 데이터 (백엔드 API 구현 시 제거 예정)
+ * @note GET /api/users 엔드포인트의 응답 형식과 동일
+ */
+const MOCK_USERS: User[] = [
+  { id: 1, name: "고재우, 나산하", coin: 100 },
+  { id: 2, name: "김연지, 김채민", coin: 100 },
+  { id: 3, name: "박지성, 이민재", coin: 100 },
+];
+
+// Contexts
+const MessageContext = createContext<MessageContextType | null>(null);
+const UserContext = createContext<UserContextType | null>(null);
+
+// Hooks
+const useMessage = () => {
+  const context = useContext(MessageContext);
+  if (!context) throw new Error('useMessage must be used within a MessageProvider');
+  return context;
 };
 
-// 컴포넌트 Props 인터페이스 정의
-interface LoginProps {
-  onLogin: (user: User) => void;
-}
+const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) throw new Error('useUser must be used within a UserProvider');
+  return context;
+};
 
-interface CoinTransferProps {
-  users: User[];
-  onSendCoin: (userId: number, coin: number) => void;
-  onClose: () => void;
-}
+// Components
+const MessageBox = () => {
+  const { message, clearMessage } = useMessage();
 
-interface UserInfoProps {
-  user: User;
-}
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(clearMessage, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, clearMessage]);
 
-interface RankingTableProps {
-  users: User[];
-}
+  if (!message) return null;
+  return <div className={`message-box ${message.type}`}>{message.text}</div>;
+};
 
-/**
- * @component UserInfo
- * @description 현재 로그인한 사용자의 정보를 표시하는 컴포넌트
- * @requires API - GET /api/users/:id (사용자 정보 조회)
- */
-const UserInfo: React.FC<UserInfoProps> = ({ user }) => (
-  <div className="user-info-box">
-    <div className="user-info-item">번호: {user.id}</div>
-    <div className="user-info-item">{user.name}</div>
-    <div className="user-info-item">코인: {user.coin}</div>
-  </div>
-);
+const UserInfo = () => {
+  const { currentUser } = useUser();
+  if (!currentUser) return null;
 
-/**
- * @component RankingTable
- * @description 전체 사용자의 코인 보유량 랭킹을 표시하는 컴포넌트
- * @requires API - GET /api/ranking (전체 랭킹 조회)
- * @example Response
- * [
- *   { "id": 1, "name": "고재우, 나산하", "coin": 100 },
- *   { "id": 2, "name": "김연지, 김채민", "coin": 90 }
- * ]
- */
-const RankingTable: React.FC<RankingTableProps> = ({ users }) => (
-  <div className="ranking-section">
-    <div className="ranking-header">랭킹</div>
-    <table className="ranking-table">
-      <thead>
-        <tr>
-          <th>순위</th>
-          <th>이름</th>
-          <th>코인</th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user, index) => (
-          <tr key={user.id}>
-            <td>{index + 1} 위</td>
-            <td>{user.name}</td>
-            <td>{user.coin}</td>
+  return (
+    <div className="user-info-box">
+      <div className="user-info-content">
+        번호: {currentUser.id} <span className="separator">|</span> {currentUser.name} <span className="separator">|</span> 코인: {currentUser.coin}
+      </div>
+    </div>
+  );
+};
+
+const RankingTable = () => {
+  const { users } = useUser();
+  const sortedUsers = [...users].sort((a, b) => b.coin - a.coin);
+
+  return (
+    <div className="ranking-container">
+      <h2 className="ranking-title">랭킹</h2>
+      <table className="ranking-table">
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>이름</th>
+            <th>코인</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody>
+          {sortedUsers.map((user, index) => (
+            <tr key={user.id}>
+              <td>{index + 1}</td>
+              <td>{user.name}</td>
+              <td>{user.coin}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
-/**
- * @component Login
- * @description 사용자 로그인 처리 컴포넌트
- * @requires API - POST /api/login
- * @example Request
- * {
- *   "id": "1",
- *   "password": "hashedPassword"
- * }
- * @example Response
- * {
- *   "id": 1,
- *   "name": "고재우, 나산하",
- *   "coin": 100,
- *   "token": "jwt_token_here"
- * }
- */
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login = () => {
+  const { login } = useUser();
+  const { showError } = useMessage();
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
 
@@ -112,182 +209,270 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     const userId = Number(id);
     if (!userId || isNaN(userId)) {
-      alert('회원 번호를 입력하세요.');
+      showError('회원 번호를 입력하세요.');
       return;
     }
-    // TODO: API 연동 - POST /api/login
-    // 현재는 더미 데이터로 처리
-    onLogin({ id: userId, name: `사용자${userId}`, coin: 100 });
+    
+    const user = MOCK_USERS.find(u => u.id === userId);
+    if (!user) {
+      showError('존재하지 않는 회원 번호입니다.');
+      return;
+    }
+    
+    login(user);
   };
 
   return (
     <div className="login-modal">
       <h2 className="login-title">로그인</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="login-box login-inline-box">
-          <label className="login-label">아이디:</label>
+      <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
+        <div className="login-input-row">
+          <label htmlFor="userId">아이디</label>
           <input
-            className="login-input"
+            id="userId"
             type="text"
             value={id}
             onChange={e => setId(e.target.value)}
+            autoComplete="off"
           />
         </div>
-        <div className="login-box login-inline-box">
-          <label className="login-label">비밀번호:</label>
+        <div className="login-input-row">
+          <label htmlFor="userPw">비밀번호</label>
           <input
-            className="login-input"
+            id="userPw"
             type="password"
             value={pw}
             onChange={e => setPw(e.target.value)}
+            autoComplete="new-password"
           />
         </div>
-        <button className="login-btn" type="submit">로그인</button>
+        <button type="submit">로그인</button>
       </form>
     </div>
   );
 };
 
-/**
- * @component CoinTransfer
- * @description 코인 전송 처리 컴포넌트
- * @requires API - POST /api/transfer
- * @example Request
- * {
- *   "fromUserId": 1,
- *   "toUserId": 2,
- *   "amount": 50
- * }
- * @example Response
- * {
- *   "success": true,
- *   "message": "전송 완료",
- *   "transaction": {
- *     "id": "tx_123",
- *     "timestamp": "2024-01-01T00:00:00Z",
- *     "fromUser": { "id": 1, "name": "고재우, 나산하", "newBalance": 50 },
- *     "toUser": { "id": 2, "name": "김연지, 김채민", "newBalance": 150 }
- *   }
- * }
- */
-const CoinTransfer: React.FC<CoinTransferProps> = ({ users, onSendCoin, onClose }) => {
-  const [userId, setUserId] = useState('');
-  const [coin, setCoin] = useState('');
+const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
+  const { users, currentUser, sendCoin } = useUser();
+  const { showError, showSuccess } = useMessage();
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [amount, setAmount] = useState('');
 
-  const handleSend = () => {
-    if (!userId || isNaN(Number(userId))) {
-      alert('존재하는 회원 번호를 입력해주세요.');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserId || !amount) {
+      showError('모든 필드를 입력해주세요.');
       return;
     }
-    if (!coin || isNaN(Number(coin)) || Number(coin) <= 0) {
-      alert('보낼 코인을 입력해주세요.');
+    
+    const result = await sendCoin(Number(selectedUserId), Number(amount));
+    if (!result.success) {
+      showError(result.message || '코인 전송에 실패했습니다.');
       return;
     }
-    // TODO: API 연동 - POST /api/transfer
-    onSendCoin(Number(userId), Number(coin));
-    setCoin('');
-    setUserId('');
+    
+    const toUser = users.find(u => u.id === Number(selectedUserId));
+    showSuccess(`${toUser?.name || '사용자'}님에게 ${amount}코인을 전송했습니다.`);
+    setAmount('');
+    setSelectedUserId('');
     onClose();
   };
 
   return (
-    <div className="coin-transfer-modal">
-      <button className="close-btn" onClick={onClose} aria-label="닫기">×</button>
-      <h2 className="coin-transfer-title">코인 전송</h2>
-      <div className="coin-transfer-box">
-        <label className="coin-label">보낼 번호:</label>
-        <input
-          className="coin-input"
-          type="number"
-          min="1"
-          value={userId}
-          onChange={e => setUserId(e.target.value)}
-        />
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="coin-transfer-modal" onClick={e => e.stopPropagation()}>
+        <h2 className="coin-transfer-title">코인 전송</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="coin-transfer-form-group">
+            <label htmlFor="receiver">받는 사람:</label>
+            <select
+              id="receiver"
+              value={selectedUserId}
+              onChange={e => setSelectedUserId(e.target.value)}
+              className="coin-transfer-select"
+            >
+              <option value="">선택하세요</option>
+              {users
+                .filter(user => user.id !== currentUser?.id)
+                .map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="coin-transfer-form-group">
+            <label htmlFor="amount">코인 수량:</label>
+            <input
+              id="amount"
+              type="number"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              min="1"
+              className="coin-transfer-input"
+            />
+          </div>
+          <div className="coin-transfer-button-group">
+            <button type="submit" className="coin-transfer-submit">전송</button>
+            <button type="button" onClick={onClose} className="coin-transfer-cancel">취소</button>
+          </div>
+        </form>
       </div>
-      <div className="coin-transfer-box">
-        <label className="coin-label">보낼 코인:</label>
-        <input
-          className="coin-input"
-          type="number"
-          min="1"
-          value={coin}
-          onChange={e => setCoin(e.target.value)}
-        />
-      </div>
-      <button className="send-btn" onClick={handleSend}>보내기</button>
     </div>
   );
 };
 
-/**
- * @component App
- * @description 메인 애플리케이션 컴포넌트
- * @requires WebSocket - ws://your-api-domain/ws
- * @description 실시간 업데이트를 위한 웹소켓 연결이 필요합니다.
- * @example WebSocket Events
- * {
- *   "type": "COIN_TRANSFER",
- *   "data": {
- *     "fromUser": { "id": 1, "name": "고재우, 나산하", "coin": 50 },
- *     "toUser": { "id": 2, "name": "김연지, 김채민", "coin": 150 },
- *     "amount": 50
- *   }
- * }
- */
-const App: React.FC = () => {
-  // TODO: API 연동 시 상태 관리 라이브러리(Redux 등) 도입 고려
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [showTransfer, setShowTransfer] = useState(false);
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: '고재우, 나산하', coin: 100 },
-    { id: 2, name: '김연지, 김채민', coin: 100 },
-    { id: 3, name: '홍길동', coin: 100 },
-    { id: 4, name: '이순신', coin: 100 }
-  ]);
+// Providers
+const MessageProvider = ({ children }: { children: React.ReactNode }) => {
+  const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null);
 
-  const handleLogin = (user: User) => {
+  const showError = (text: string) => {
+    setMessage({ text, type: 'error' });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const showSuccess = (text: string) => {
+    setMessage({ text, type: 'success' });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
+  const clearMessage = () => setMessage(null);
+
+  return (
+    <MessageContext.Provider value={{ message, showError, showSuccess, clearMessage }}>
+      {children}
+    </MessageContext.Provider>
+  );
+};
+
+/**
+ * @provider UserProvider
+ * @description 사용자 관리 및 코인 전송 로직
+ * @note 백엔드 API 연동 시 수정이 필요한 주요 부분
+ */
+const UserProvider = ({ children }: { children: React.ReactNode }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const { showError } = useMessage();
+
+  /**
+   * @function login
+   * @description 사용자 로그인 처리
+   * @note POST /api/auth/login 엔드포인트로 대체 필요
+   */
+  const login = (user: User) => {
     const found = users.find(u => u.id === user.id);
     if (found) {
       setCurrentUser(found);
     } else {
-      alert('존재하지 않는 회원입니다.');
+      setUsers(prev => [...prev, user]);
+      setCurrentUser(user);
     }
   };
 
-  const handleSendCoin = (userId: number, coin: number) => {
-    const toUser = users.find(u => u.id === userId);
+  const logout = () => setCurrentUser(null);
+
+  /**
+   * @function sendCoin
+   * @description 코인 전송 처리
+   * @note 
+   * 1. POST /api/transactions 엔드포인트로 대체 필요
+   * 2. 트랜잭션 원자성 보장 필요
+   * 3. 동시성 제어 필요 (예: 낙관적 락)
+   * 
+   * @example
+   * // API Request 예시
+   * POST /api/transactions
+   * {
+   *   "toUserId": 2,
+   *   "amount": 10
+   * }
+   */
+  const sendCoin = async (toUserId: number, amount: number): Promise<Result<CoinTransferEvent>> => {
+    if (!currentUser) {
+      return { success: false, message: '로그인이 필요합니다.' };
+    }
+
+    const toUser = users.find(u => u.id === toUserId);
     if (!toUser) {
-      alert('존재하지 않는 회원입니다.');
-      return;
+      return { success: false, message: '받는 사람을 찾을 수 없습니다.' };
     }
-    // TODO: API 연동 후 실제 전송 처리 및 상태 업데이트
-    alert(`${toUser.name}에게 ${coin}개 보내졌습니다.`);
-  };
 
-  if (!currentUser) {
-    return <Login onLogin={handleLogin} />;
-  }
+    if (amount <= 0) {
+      return { success: false, message: '올바른 코인 수량을 입력해주세요.' };
+    }
+
+    if (currentUser.coin < amount) {
+      return { success: false, message: '보유한 코인이 부족합니다.' };
+    }
+
+    // 주의: 실제 구현 시 이 부분은 백엔드에서 트랜잭션으로 처리되어야 함
+    const updatedUsers = users.map(user => {
+      if (user.id === currentUser.id) return { ...user, coin: user.coin - amount };
+      if (user.id === toUserId) return { ...user, coin: user.coin + amount };
+      return user;
+    });
+
+    setUsers(updatedUsers);
+    const updatedCurrentUser = updatedUsers.find(u => u.id === currentUser.id)!;
+    setCurrentUser(updatedCurrentUser);
+
+    return {
+      success: true,
+      data: {
+        type: 'COIN_TRANSFER',
+        data: {
+          fromUser: updatedCurrentUser,
+          toUser: updatedUsers.find(u => u.id === toUserId)!,
+          amount
+        }
+      }
+    };
+  };
 
   return (
-    <div className="app">
-      {showTransfer ? (
-        <CoinTransfer 
-          users={users} 
-          onSendCoin={handleSendCoin} 
-          onClose={() => setShowTransfer(false)} 
-        />
+    <UserContext.Provider value={{ currentUser, users, login, logout, sendCoin }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+// Main App Content
+const AppContent = () => {
+  const { currentUser } = useUser();
+  const [showTransfer, setShowTransfer] = useState(false);
+
+  return (
+    <div className="App">
+      <MessageBox />
+      {!currentUser ? (
+        <Login />
       ) : (
         <>
-          <h1 className="title">코마데이</h1>
-          <UserInfo user={currentUser} />
-          <RankingTable users={users} />
-          <button className="coin-btn" onClick={() => setShowTransfer(true)}>
-            코인 전송
-          </button>
+          <h1 className="app-title">코마데이</h1>
+          <div className="user-section">
+            <UserInfo />
+          </div>
+          <RankingTable />
+          <div className="action-section">
+            <button className="coin-transfer-btn" onClick={() => setShowTransfer(true)}>
+              코인 전송
+            </button>
+          </div>
+          {showTransfer && <CoinTransfer onClose={() => setShowTransfer(false)} />}
         </>
       )}
     </div>
   );
 };
+
+// Root App Component
+const App = () => (
+  <MessageProvider>
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
+  </MessageProvider>
+);
 
 export default App;
