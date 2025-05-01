@@ -58,10 +58,21 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 500;
-  flex: 1;
   white-space: nowrap;
   position: relative;
-  padding: 0 var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.user-info-item:nth-child(1) {
+  flex: 0.8;
+}
+
+.user-info-item:nth-child(2) {
+  flex: 1.2;
+}
+
+.user-info-item:nth-child(3) {
+  flex: 0.8;
 }
 
 .user-info-item:not(:last-child)::after {
