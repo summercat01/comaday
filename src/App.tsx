@@ -87,7 +87,7 @@ function Login({ onLogin }: { onLogin: (user: User) => void }) {
           />
         </div>
         <div className="login-box login-inline-box">
-          <label className="login-label">비밀번호:</label>
+          <label className="login-label">암호:</label>
           <input
             className="login-input"
             type="password"
@@ -157,10 +157,10 @@ function App() {
       ) : (
         <>
           <h1 className="title">코마데이</h1>
-          <div className="user-info-row">
-            <div className="user-info-box">회원 번호: {currentUser.id}</div>
-            <div className="user-info-box">{currentUser.name}</div>
-            <div className="user-info-box">보유 코인: 100</div>
+          <div className="user-info">
+            <span>회원 번호: {currentUser?.id}</span>
+            <span>{currentUser?.name}</span>
+            <span>보유 코인: 100</span>
           </div>
           <div className="ranking-table-container">
             <table className="ranking-table">
@@ -177,14 +177,14 @@ function App() {
               <tbody>
                 {users.map((u, idx) => (
                   <tr key={u.id}>
-                    <td>{idx + 1}위</td>
+                    <td>{idx + 1} 위</td>
                     <td>{u.name}</td>
                     <td>100</td>
                   </tr>
                 ))}
                 {[...Array(10 - users.length)].map((_, i) => (
                   <tr key={1000 + i}>
-                    <td>{users.length + i + 1}위</td>
+                    <td>{users.length + i + 1} 위</td>
                     <td></td>
                     <td></td>
                   </tr>
