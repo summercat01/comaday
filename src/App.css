@@ -36,19 +36,20 @@
 }
 
 .user-info span:first-child {
-  width: 100px;
+  width: 80px;
   flex-shrink: 0;
 }
 
 .user-info span:nth-child(2) {
-  flex: 1;
+  flex: 2;
   text-align: center;
-  min-width: 0;
+  min-width: 200px;
   padding: 0 16px;
+  white-space: nowrap;
 }
 
 .user-info span:last-child {
-  width: 100px;
+  width: 80px;
   flex-shrink: 0;
   border-right: none;
 }
