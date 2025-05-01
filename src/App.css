@@ -61,6 +61,7 @@ body {
   flex: 1;
   white-space: nowrap;
   position: relative;
+  padding: 0 var(--spacing-md);
 }
 
 .user-info-item:not(:last-child)::after {
@@ -69,8 +70,8 @@ body {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 1px;
-  height: 20px;
+  width: 2px;
+  height: 24px;
   background: var(--color-border);
 }
 
