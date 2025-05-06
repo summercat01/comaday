@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
 import { userService } from './api/services/userService';
+import { User } from './types/user';
 
 /**
  * @fileoverview 코마데이(ComaDay) - 실시간 코인 전송 및 랭킹 관리 시스템
@@ -30,7 +31,6 @@ import { userService } from './api/services/userService';
  * @description 사용자 정보 인터페이스
  * @property {number} id - 사용자 고유 식별자
  * @property {string} username - 사용자 아이디
- * @property {string} memberNumber - 사용자 번호
  * @property {number} coinCount - 보유 코인 수량
  * @property {boolean} isGuest - 게스트 여부
  * @property {string} lastLoginAt - 마지막 로그인 시간
@@ -40,20 +40,11 @@ import { userService } from './api/services/userService';
  * {
  *   "id": 1,
  *   "username": "고재우, 나산하",
- *   "memberNumber": "010-1234-5678",
  *   "coinCount": 100,
  *   "isGuest": false,
  *   "lastLoginAt": "2023-04-01T12:00:00"
  * }
  */
-interface User {
-  id: number;
-  username: string;
-  memberNumber: string;
-  coinCount: number;
-  isGuest: boolean;
-  lastLoginAt: string;
-}
 
 /**
  * @interface MessageContextType
@@ -130,9 +121,9 @@ interface Result<T> {
  * @note GET /api/users 엔드포인트의 응답 형식과 동일
  */
 const MOCK_USERS: User[] = [
-  { id: 1, username: "고재우, 나산하", memberNumber: "010-1234-5678", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
-  { id: 2, username: "김연지, 김채민", memberNumber: "010-2345-6789", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
-  { id: 3, username: "박지성, 이민재", memberNumber: "010-3456-7890", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
+  { id: 1, username: "고재우, 나산하", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
+  { id: 2, username: "김연지, 김채민", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
+  { id: 3, username: "박지성, 이민재", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
 ];
 
 // Contexts
@@ -174,7 +165,7 @@ const UserInfo = () => {
   return (
     <div className="user-info-box">
       <div className="user-info-content">
-        번호: {currentUser.memberNumber} <span className="separator">|</span> {currentUser.username} <span className="separator">|</span> 코인: {currentUser.coinCount}
+        번호: {currentUser.id} <span className="separator">|</span> {currentUser.username} <span className="separator">|</span> 코인: {currentUser.coinCount}
       </div>
     </div>
   );
