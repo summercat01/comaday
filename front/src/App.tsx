@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import './App.css';
+import { userService } from './api/services/userService';
 
 /**
  * @fileoverview 코마데이(ComaDay) - 실시간 코인 전송 및 랭킹 관리 시스템
@@ -28,21 +29,30 @@ import './App.css';
  * @interface User
  * @description 사용자 정보 인터페이스
  * @property {number} id - 사용자 고유 식별자
- * @property {string} name - 사용자 이름 (팀원 이름)
- * @property {number} coin - 보유 코인 수량
+ * @property {string} username - 사용자 아이디
+ * @property {string} memberNumber - 사용자 번호
+ * @property {number} coinCount - 보유 코인 수량
+ * @property {boolean} isGuest - 게스트 여부
+ * @property {string} lastLoginAt - 마지막 로그인 시간
  * 
  * @example
  * // API Response 예시
  * {
  *   "id": 1,
- *   "name": "고재우, 나산하",
- *   "coin": 100
+ *   "username": "고재우, 나산하",
+ *   "memberNumber": "010-1234-5678",
+ *   "coinCount": 100,
+ *   "isGuest": false,
+ *   "lastLoginAt": "2023-04-01T12:00:00"
  * }
  */
 interface User {
   id: number;
-  name: string;
-  coin: number;
+  username: string;
+  memberNumber: string;
+  coinCount: number;
+  isGuest: boolean;
+  lastLoginAt: string;
 }
 
 /**
@@ -120,9 +130,9 @@ interface Result<T> {
  * @note GET /api/users 엔드포인트의 응답 형식과 동일
  */
 const MOCK_USERS: User[] = [
-  { id: 1, name: "고재우, 나산하", coin: 100 },
-  { id: 2, name: "김연지, 김채민", coin: 100 },
-  { id: 3, name: "박지성, 이민재", coin: 100 },
+  { id: 1, username: "고재우, 나산하", memberNumber: "010-1234-5678", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
+  { id: 2, username: "김연지, 김채민", memberNumber: "010-2345-6789", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
+  { id: 3, username: "박지성, 이민재", memberNumber: "010-3456-7890", coinCount: 100, isGuest: false, lastLoginAt: "2023-04-01T12:00:00" },
 ];
 
 // Contexts
@@ -164,7 +174,7 @@ const UserInfo = () => {
   return (
     <div className="user-info-box">
       <div className="user-info-content">
-        번호: {currentUser.id} <span className="separator">|</span> {currentUser.name} <span className="separator">|</span> 코인: {currentUser.coin}
+        번호: {currentUser.memberNumber} <span className="separator">|</span> {currentUser.username} <span className="separator">|</span> 코인: {currentUser.coinCount}
       </div>
     </div>
   );
@@ -172,7 +182,7 @@ const UserInfo = () => {
 
 const RankingTable = () => {
   const { users } = useUser();
-  const sortedUsers = [...users].sort((a, b) => b.coin - a.coin);
+  const sortedUsers = [...users].sort((a, b) => b.coinCount - a.coinCount);
 
   return (
     <div className="ranking-container">
@@ -189,8 +199,8 @@ const RankingTable = () => {
           {sortedUsers.map((user, index) => (
             <tr key={user.id}>
               <td>{index + 1}</td>
-              <td>{user.name}</td>
-              <td>{user.coin}</td>
+              <td>{user.username}</td>
+              <td>{user.coinCount}</td>
             </tr>
           ))}
         </tbody>
@@ -202,24 +212,26 @@ const RankingTable = () => {
 const Login = () => {
   const { login } = useUser();
   const { showError } = useMessage();
-  const [id, setId] = useState('');
-  const [pw, setPw] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const userId = Number(id);
-    if (!userId || isNaN(userId)) {
-      showError('회원 번호를 입력하세요.');
+    if (!username || !password) {
+      showError('아이디와 비밀번호를 모두 입력하세요.');
       return;
     }
     
-    const user = MOCK_USERS.find(u => u.id === userId);
-    if (!user) {
-      showError('존재하지 않는 회원 번호입니다.');
-      return;
+    try {
+      const user = await userService.guestLogin(username, password);
+      login(user);
+    } catch (error) {
+      if (error instanceof Error) {
+        showError(error.message);
+      } else {
+        showError('알 수 없는 오류가 발생했습니다.');
+      }
     }
-    
-    login(user);
   };
 
   return (
@@ -227,22 +239,22 @@ const Login = () => {
       <h2 className="login-title">로그인</h2>
       <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
         <div className="login-input-row">
-          <label htmlFor="userId">아이디</label>
+          <label htmlFor="username">아이디</label>
           <input
-            id="userId"
+            id="username"
             type="text"
-            value={id}
-            onChange={e => setId(e.target.value)}
+            value={username}
+            onChange={e => setUsername(e.target.value)}
             autoComplete="off"
           />
         </div>
         <div className="login-input-row">
-          <label htmlFor="userPw">비밀번호</label>
+          <label htmlFor="password">비밀번호</label>
           <input
-            id="userPw"
+            id="password"
             type="password"
-            value={pw}
-            onChange={e => setPw(e.target.value)}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             autoComplete="new-password"
           />
         </div>
@@ -272,7 +284,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
     }
     
     const toUser = users.find(u => u.id === Number(selectedUserId));
-    showSuccess(`${toUser?.name || '사용자'}님에게 ${amount}코인을 전송했습니다.`);
+    showSuccess(`${toUser?.username || '사용자'}님에게 ${amount}코인을 전송했습니다.`);
     setAmount('');
     setSelectedUserId('');
     onClose();
@@ -296,7 +308,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
                 .filter(user => user.id !== currentUser?.id)
                 .map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.name}
+                    {user.username}
                   </option>
                 ))}
             </select>
@@ -352,7 +364,7 @@ const MessageProvider = ({ children }: { children: React.ReactNode }) => {
  */
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
   const { showError } = useMessage();
 
   /**
@@ -363,7 +375,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (user: User) => {
     const found = users.find(u => u.id === user.id);
     if (found) {
-      setCurrentUser(found);
+      setCurrentUser(user);
     } else {
       setUsers(prev => [...prev, user]);
       setCurrentUser(user);
@@ -402,14 +414,14 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       return { success: false, message: '올바른 코인 수량을 입력해주세요.' };
     }
 
-    if (currentUser.coin < amount) {
+    if (currentUser.coinCount < amount) {
       return { success: false, message: '보유한 코인이 부족합니다.' };
     }
 
     // 주의: 실제 구현 시 이 부분은 백엔드에서 트랜잭션으로 처리되어야 함
     const updatedUsers = users.map(user => {
-      if (user.id === currentUser.id) return { ...user, coin: user.coin - amount };
-      if (user.id === toUserId) return { ...user, coin: user.coin + amount };
+      if (user.id === currentUser.id) return { ...user, coinCount: user.coinCount - amount };
+      if (user.id === toUserId) return { ...user, coinCount: user.coinCount + amount };
       return user;
     });
 
