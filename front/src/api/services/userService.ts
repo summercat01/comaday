@@ -20,4 +20,9 @@ export const userService = {
     });
     return response.data;
   },
+
+  getReceivers: async (myId: number): Promise<Pick<User, 'id' | 'username'>[]> => {
+    const response = await axiosInstance.get<Pick<User, 'id' | 'username'>[]>(`/users/receivers/${myId}`);
+    return response.data;
+  },
 }; 
