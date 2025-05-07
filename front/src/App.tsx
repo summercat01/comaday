@@ -266,7 +266,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
               <option value="">선택하세요</option>
               {filtered.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.username}
+                  No.{user.id}  {user.username}
                 </option>
               ))}
             </select>
