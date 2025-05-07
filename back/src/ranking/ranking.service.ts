@@ -63,10 +63,25 @@ export class RankingService {
   }
 
   private async reorderRanks(): Promise<void> {
-    const allRankings = await this.rankingRepository.find({ order: { totalCoins: 'DESC' } });
+    const allRankings = await this.rankingRepository.find({
+      order: { totalCoins: 'DESC' },
+    });
+  
+    let currentRank = 1;
+    let previousCoins: number | null = null;
+    let tieCount = 0;
+  
     for (let i = 0; i < allRankings.length; i++) {
-      allRankings[i].rank = i + 1;
+      const ranking = allRankings[i];
+  
+      if (ranking.totalCoins !== previousCoins) {
+        // 새로운 점수 등장 시, 현재 순위는 이전 순위 + tieCount
+        currentRank = i + 1;
+        previousCoins = ranking.totalCoins;
+      }
+      ranking.rank = currentRank;
     }
+  
     await this.rankingRepository.save(allRankings);
   }
 } 
