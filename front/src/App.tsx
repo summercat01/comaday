@@ -213,6 +213,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
   const [amount, setAmount] = useState("");
   const [keyword, setKeyword] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -226,11 +227,12 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!selectedUserId || !amount || !currentUser) {
       showError("모든 필드를 입력해주세요.");
       return;
     }
-
+    setIsSubmitting(true);
     try {
       await coinService.transfer(
         currentUser.id,
@@ -243,6 +245,8 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
       onClose();
     } catch (error) {
       showError("코인 전송에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -318,7 +322,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
             />
           </div>
           <div className="coin-transfer-button-group">
-            <button type="submit" className="coin-transfer-submit">
+            <button type="submit" className="coin-transfer-submit" disabled={isSubmitting}>
               전송
             </button>
             <button
