@@ -1,30 +1,27 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { RankingService } from '../ranking/ranking.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private rankingService: RankingService,
   ) {}
-
-  private generateMemberNumber(): string {
-    const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `M${timestamp}${random}`;
-  }
 
   async create(username: string): Promise<User> {
     const user = this.usersRepository.create({ 
       username,
-      memberNumber: this.generateMemberNumber(),
       coinCount: 0,
       isGuest: true
     });
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+    await this.rankingService.updateOrCreateRanking(savedUser.id);
+    return savedUser;
   }
 
   async createWithPassword(username: string, password: string): Promise<User> {
@@ -32,12 +29,13 @@ export class UsersService {
     const user = this.usersRepository.create({ 
       username, 
       password: hashedPassword,
-      memberNumber: this.generateMemberNumber(),
       coinCount: 0,
       isGuest: true,
       lastLoginAt: new Date()
     });
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+    await this.rankingService.updateOrCreateRanking(savedUser.id);
+    return savedUser;
   }
 
   async findAll(): Promise<User[]> {
@@ -50,10 +48,6 @@ export class UsersService {
 
   async findByUsername(username: string): Promise<User> {
     return this.usersRepository.findOne({ where: { username } });
-  }
-
-  async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { email } });
   }
 
   async updateCoins(id: number, amount: number): Promise<User> {
@@ -81,6 +75,16 @@ export class UsersService {
 
     // 마지막 로그인 시간 업데이트
     user.lastLoginAt = new Date();
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+    await this.rankingService.updateOrCreateRanking(savedUser.id);
+    return savedUser;
+  }
+
+  async findAllExcept(myId: number): Promise<{id: number, username: string}[]> {
+    const users = await this.usersRepository.find({
+      where: { id: Not(myId) },
+      select: ['id', 'username'],
+    });
+    return users;
   }
 } 

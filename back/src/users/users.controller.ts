@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Put, HttpException, HttpStatus, Una
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { Not } from 'typeorm';
 
 @Controller('users')
 export class UsersController {
@@ -78,5 +79,10 @@ export class UsersController {
     @Body('amount') amount: number,
   ): Promise<User> {
     return this.usersService.updateCoins(+id, amount);
+  }
+
+  @Get('receivers/:myId')
+  async getReceivers(@Param('myId') myId: string): Promise<{id: number, username: string}[]> {
+    return this.usersService.findAllExcept(+myId);
   }
 } 
