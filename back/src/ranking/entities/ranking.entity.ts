@@ -17,9 +17,6 @@ export class Ranking {
   username: string;
 
   @Column()
-  memberNumber: string;
-
-  @Column()
   totalCoins: number;
 
   @Column()

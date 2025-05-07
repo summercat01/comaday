@@ -14,24 +14,42 @@ export class RankingService {
   ) {}
 
   async getRankings(): Promise<Ranking[]> {
-    const users = await this.userRepository.find();
-    const sortedUsers = users.sort((a, b) => b.coinCount - a.coinCount);
-
-    const rankings = sortedUsers.map((user, index) => {
-      return this.rankingRepository.create({
-        userId: user.id,
-        username: user.username,
-        memberNumber: user.memberNumber,
-        totalCoins: user.coinCount,
-        rank: index + 1,
-      });
-    });
-
-    return this.rankingRepository.save(rankings);
+    return this.rankingRepository.find({ order: { rank: 'ASC' } });
   }
 
   async getUserRanking(userId: number): Promise<Ranking> {
     const rankings = await this.getRankings();
     return rankings.find(ranking => ranking.userId === userId);
+  }
+
+  async updateOrCreateRanking(userId: number): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) return;
+    // 해당 유저의 랭킹 정보가 이미 있는지 확인
+    let ranking = await this.rankingRepository.findOne({ where: { userId: user.id } });
+    if (!ranking) {
+      // 없으면 새로 생성
+      ranking = this.rankingRepository.create({
+        userId: user.id,
+        username: user.username,
+        totalCoins: user.coinCount,
+        rank: 0, // 임시값, 전체 재정렬 필요
+      });
+    } else {
+      // 있으면 정보만 갱신
+      ranking.username = user.username;
+      ranking.totalCoins = user.coinCount;
+    }
+    await this.rankingRepository.save(ranking);
+    // 전체 랭킹 재정렬
+    await this.reorderRanks();
+  }
+
+  private async reorderRanks(): Promise<void> {
+    const allRankings = await this.rankingRepository.find({ order: { totalCoins: 'DESC' } });
+    for (let i = 0; i < allRankings.length; i++) {
+      allRankings[i].rank = i + 1;
+    }
+    await this.rankingRepository.save(allRankings);
   }
 } 
