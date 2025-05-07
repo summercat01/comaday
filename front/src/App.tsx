@@ -329,21 +329,24 @@ const MessageProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [users, setUsers] = useState<User[]>([]);
   const { showError } = useMessage();
 
   const login = (user: User) => {
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
     const found = users.find((u) => u.id === user.id);
-    if (found) {
-      setCurrentUser(user);
-    } else {
-      setUsers((prev) => [...prev, user]);
-      setCurrentUser(user);
-    }
+    if (!found) setUsers((prev) => [...prev, user]);
   };
 
-  const logout = () => setCurrentUser(null);
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
+  };
 
   const sendCoin = async (
     toUserId: number,
@@ -405,12 +408,31 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 // Main App Content
 const AppContent = () => {
-  const { currentUser } = useUser();
+  const { currentUser, logout } = useUser();
   const [showTransfer, setShowTransfer] = useState(false);
 
   return (
     <div className="App">
       <MessageBox />
+      {currentUser && (
+        <button
+          onClick={logout}
+          style={{
+            position: 'absolute',
+            top: 24,
+            right: 32,
+            zIndex: 1000,
+            padding: '8px 16px',
+            background: '#fff',
+            border: '1px solid #ddd',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            fontWeight: 600
+          }}
+        >
+          로그아웃
+        </button>
+      )}
       {!currentUser ? (
         <Login />
       ) : (
