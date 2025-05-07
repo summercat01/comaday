@@ -11,7 +11,24 @@ export class RankingService {
     private userRepository: Repository<User>,
     @InjectRepository(Ranking)
     private rankingRepository: Repository<Ranking>,
-  ) {}
+  ) {
+    // 서버 시작 시 한 번만 실행
+    this.initializeRankings();
+  }
+
+  private async initializeRankings() {
+    // 모든 랭킹 데이터의 username을 해당 유저의 username으로 업데이트
+    const rankings = await this.rankingRepository.find();
+    for (const ranking of rankings) {
+      const user = await this.userRepository.findOne({ where: { id: ranking.userId } });
+      if (user && user.username) {
+        await this.rankingRepository.update(
+          { userId: ranking.userId },
+          { username: user.username }
+        );
+      }
+    }
+  }
 
   async getRankings(): Promise<Ranking[]> {
     return this.rankingRepository.find({ order: { rank: 'ASC' } });
@@ -24,7 +41,7 @@ export class RankingService {
 
   async updateOrCreateRanking(userId: number): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) return;
+    if (!user || !user.username) return;
     // 해당 유저의 랭킹 정보가 이미 있는지 확인
     let ranking = await this.rankingRepository.findOne({ where: { userId: user.id } });
     if (!ranking) {
