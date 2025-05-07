@@ -1,142 +1,267 @@
 :root {
-  --color-primary: #007bff;
-  --color-primary-dark: #0056b3;
-  --color-background: #ffffff;
-  --color-border: #000000;
-  --color-gray: #f0f0f0;
-  --color-gray-dark: #bdbdbd;
-  --color-success: #3c3;
-  --color-success-bg: #efe;
-  --color-success-border: #6f6;
-  --color-error: #c33;
-  --color-error-bg: #fee;
-  --color-error-border: #f66;
-  --color-modal-overlay: rgba(0, 0, 0, 0.5);
-  --border-radius: 4px;
+  /* 로고 기반 색상 */
+  --color-primary: #7fffd4; /* 민트색 */
+  --color-primary-dark: #5fe0c1;
+  --color-primary-light: #a0ffed;
+  --color-secondary: #333333; /* 로고의 CODING 텍스트 색상 */
+  --color-text-title: #333333;
+  --color-background: #f0fffd;
+  --color-card-bg: #ffffff;
+  --color-text: #333333;
+  --color-text-light: #6c757d;
+  --color-border: #c5f3ea;
+  --color-gray: #e9f7f5;
+  --color-gray-dark: #aedbd4;
+  --color-success: #4bc0a0;
+  --color-success-bg: #e7f9f4;
+  --color-success-border: #a7e9d9;
+  --color-error: #e63946;
+  --color-error-bg: #fdebec;
+  --color-error-border: #f5c2c7;
+  --color-modal-overlay: rgba(33, 37, 41, 0.7);
+  --border-radius-sm: 6px;
+  --border-radius: 12px;
+  --border-radius-lg: 20px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 20px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.25rem;
-  --line-height: 1.5;
-  --max-width: 360px;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+  --box-shadow: 0 6px 12px rgba(72, 209, 204, 0.1),
+    0 2px 4px rgba(72, 209, 204, 0.06);
+  --box-shadow-lg: 0 12px 24px rgba(72, 209, 204, 0.12),
+    0 6px 12px rgba(72, 209, 204, 0.08);
+  --transition: all 0.3s ease;
+  --max-width: 480px;
   --modal-width: 90%;
-  --modal-max-width: 400px;
+  --modal-max-width: 420px;
 }
 
 /* Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: "Noto Sans KR", sans-serif;
   background: var(--color-background);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
 /* Layout */
 .App {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-xl) var(--spacing-md);
   box-sizing: border-box;
+  width: 100%;
+}
+
+/* 로고 스타일 - 개선된 버전 */
+.logo-container {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.app-logo {
+  width: 160px;
+  height: 160px;
+  display: block;
+  mix-blend-mode: multiply;
+  transition: var(--transition);
 }
 
 .app-title {
-  font-size: var(--font-size-lg);
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   text-align: center;
-  margin: var(--spacing-xl) 0;
+  margin: 20px 0 30px;
+  color: var(--color-text-title);
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.app-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 60px;
+  height: 4px;
+  background: var(--color-primary);
+  transform: translateX(-50%);
+  border-radius: 2px;
 }
 
 .user-section {
-  margin-bottom: 2rem;
-  background: var(--color-background);
+  margin-bottom: var(--spacing-xl);
+  background: var(--color-card-bg);
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.user-section:hover {
+  box-shadow: var(--box-shadow-lg);
+  transform: translateY(-2px);
 }
 
 .action-section {
   display: flex;
   justify-content: center;
-  margin: 2rem 0;
+  margin: var(--spacing-xl) 0;
+  width: 100%;
 }
 
 /* User Info Box */
 .user-info-box {
-  border: 2px solid var(--color-border);
   padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-  background: var(--color-background);
+  background: var(--color-card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  border-left: 4px solid var(--color-primary);
+  transition: var(--transition);
+  width: 100%;
+}
+
+.user-info-box:hover {
+  box-shadow: var(--box-shadow-lg);
 }
 
 .user-info-content {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   font-size: var(--font-size-md);
-  line-height: var(--line-height);
-  text-align: center;
+  line-height: 1.6;
+  color: var(--color-text);
 }
 
 .separator {
-  font-weight: bold;
+  color: var(--color-text-light);
   margin: 0 var(--spacing-sm);
-  font-size: 1.2em;
 }
 
 /* Ranking Section */
 .ranking-container {
   margin-top: var(--spacing-xl);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  width: 100%;
+}
+
+.ranking-container:hover {
+  box-shadow: var(--box-shadow-lg);
+  transform: translateY(-2px);
 }
 
 .ranking-title {
-  font-size: 1.5em;
-  font-weight: bold;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
   padding: var(--spacing-md);
-  border: 2px solid var(--color-border);
-  margin-bottom: var(--spacing-xl);
+  background: linear-gradient(
+    to right,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
+  color: var(--color-text-title);
+  margin: 0;
   text-align: center;
 }
 
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
-  border: 2px solid var(--color-border);
+  background-color: var(--color-card-bg);
 }
 
 .ranking-table th,
 .ranking-table td {
-  border: 1px solid var(--color-border);
   padding: var(--spacing-md);
   text-align: center;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .ranking-table th {
   background-color: var(--color-gray);
-  font-weight: bold;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ranking-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ranking-table tr:nth-child(even) {
+  background-color: rgba(127, 255, 212, 0.05);
+}
+
+.ranking-table tr:hover {
+  background-color: rgba(127, 255, 212, 0.1);
 }
 
 /* Buttons */
 .coin-transfer-btn {
   display: block;
   width: 100%;
-  padding: var(--spacing-lg);
-  margin-top: var(--spacing-xl);
-  font-size: var(--font-size-lg);
-  background-color: var(--color-primary);
-  color: white;
+  max-width: 240px;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  background: linear-gradient(
+    to right,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
+  color: var(--color-text-title);
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 30px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: var(--transition);
+  box-shadow: var(--box-shadow);
 }
 
 .coin-transfer-btn:hover {
-  background-color: var(--color-primary-dark);
+  background: linear-gradient(
+    to right,
+    var(--color-primary-dark),
+    var(--color-primary)
+  );
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-lg);
+}
+
+.coin-transfer-btn:active {
+  transform: translateY(0);
 }
 
 /* Modal Styles */
@@ -151,110 +276,227 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .coin-transfer-modal {
   position: relative;
   width: var(--modal-width);
   max-width: var(--modal-max-width);
-  background: var(--color-background);
-  border: 2px solid var(--color-border);
+  background: var(--color-card-bg);
+  border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
   box-sizing: border-box;
   z-index: 1001;
+  box-shadow: var(--box-shadow-lg);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .coin-transfer-title {
-  font-size: 1.5em;
-  font-weight: bold;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 30px;
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 2px solid var(--color-border);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-title);
 }
 
 .coin-transfer-form-group {
-  margin-bottom: 25px;
+  margin-bottom: var(--spacing-lg);
+  width: 100%;
 }
 
 .coin-transfer-form-group label {
   display: block;
-  margin-bottom: var(--spacing-md);
-  font-size: 1.1em;
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-text);
 }
 
 .coin-transfer-select,
 .coin-transfer-input {
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 2px solid var(--color-border);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
   font-size: var(--font-size-md);
   box-sizing: border-box;
+  transition: var(--transition);
+}
+
+.coin-transfer-select:focus,
+.coin-transfer-input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(127, 255, 212, 0.2);
 }
 
 .coin-transfer-button-group {
   display: flex;
   justify-content: space-between;
-  margin-top: 40px;
+  margin-top: var(--spacing-xl);
+  width: 100%;
 }
 
 .coin-transfer-submit,
 .coin-transfer-cancel {
   width: 48%;
-  padding: var(--spacing-md) 0;
+  padding: var(--spacing-md);
   font-size: var(--font-size-md);
+  font-weight: 600;
   cursor: pointer;
-  border: 2px solid var(--color-border);
+  border: none;
+  border-radius: 30px;
   text-align: center;
+  transition: var(--transition);
 }
 
 .coin-transfer-submit {
-  background-color: var(--color-border);
-  color: white;
+  background: linear-gradient(
+    to right,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
+  color: var(--color-text-title);
+}
+
+.coin-transfer-submit:hover {
+  background: linear-gradient(
+    to right,
+    var(--color-primary-dark),
+    var(--color-primary)
+  );
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+.coin-transfer-submit:active {
+  transform: translateY(0);
 }
 
 .coin-transfer-cancel {
-  background-color: var(--color-background);
-  color: var(--color-border);
+  background-color: var(--color-gray);
+  color: var(--color-text);
 }
 
-/* Login Modal */
+.coin-transfer-cancel:hover {
+  background-color: var(--color-gray-dark);
+  color: var(--color-text-title);
+}
+
+/* 로그인 화면 모바일 대응 CSS */
 .login-modal {
-  padding: var(--spacing-xl);
+  background: var(--color-card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  width: 90%;
+  max-width: 360px;
+  box-shadow: var(--box-shadow-lg);
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .login-title {
   text-align: center;
   margin-bottom: var(--spacing-xl);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-title);
+  position: relative;
+}
+
+.login-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 30px;
+  height: 3px;
+  background: var(--color-primary);
+  transform: translateX(-50%);
+  border-radius: 2px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  width: 100%;
 }
 
 .login-input-row {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .login-input-row label {
-  width: 70px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  color: var(--color-text);
 }
 
 .login-input-row input {
-  width: 200px;
-  padding: var(--spacing-xs);
+  width: 100%;
+  padding: var(--spacing-md);
   border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-md);
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.login-input-row input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(127, 255, 212, 0.2);
 }
 
 .login-form button {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-background);
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(
+    to right,
+    var(--color-primary),
+    var(--color-primary-light)
+  );
+  color: var(--color-text-title);
   cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.login-form button:hover {
+  background: linear-gradient(
+    to right,
+    var(--color-primary-dark),
+    var(--color-primary)
+  );
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow);
+}
+
+.login-form button:active {
+  transform: translateY(0);
 }
 
 /* Message Box */
@@ -263,22 +505,25 @@ body {
   top: var(--spacing-xl);
   left: 50%;
   transform: translateX(-50%);
-  padding: var(--spacing-lg) var(--spacing-xl);
+  padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--border-radius);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
+  font-weight: 500;
   z-index: 1000;
+  box-shadow: var(--box-shadow-lg);
   animation: slideDown 0.3s ease-out;
+  max-width: 90%;
 }
 
 .message-box.error {
   background-color: var(--color-error-bg);
-  border: 2px solid var(--color-error-border);
+  border-left: 4px solid var(--color-error);
   color: var(--color-error);
 }
 
 .message-box.success {
   background-color: var(--color-success-bg);
-  border: 2px solid var(--color-success-border);
+  border-left: 4px solid var(--color-success);
   color: var(--color-success);
 }
 
@@ -294,69 +539,120 @@ body {
 }
 
 /* Mobile Styles */
-@media (max-width: 360px) {
+@media (max-width: 480px) {
   .App {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-sm);
     max-width: 100%;
+    overflow-x: hidden;
   }
-  
+
   .app-title {
-    font-size: 22px;
+    font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-lg);
   }
 
+  .logo-container {
+    width: 150px;
+    height: 150px;
+  }
+
+  .app-logo {
+    width: 130px;
+    height: 130px;
+  }
+
   .coin-transfer-btn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-sm);
+    max-width: 100%;
   }
 
   .coin-transfer-modal {
     width: 95%;
-    padding: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    max-width: 95%;
   }
 
   .login-modal {
-    padding: var(--spacing-lg);
+    width: 95%;
+    padding: var(--spacing-md);
+    margin: 0 auto;
+    max-width: 360px;
+  }
+
+  .login-title {
+    font-size: 1.3rem;
+    margin-bottom: var(--spacing-lg);
   }
 
   .login-input-row input {
-    width: 160px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .login-form {
+    padding: 0 5px;
   }
 }
 
-/* Desktop Styles */
-@media (min-width: 769px) {
-  :root {
-    --font-size-lg: 2rem;
-    --max-width: 800px;
+/* 아주 작은 화면 대응 */
+@media (max-width: 320px) {
+  .login-modal {
+    width: 95%;
+    padding: var(--spacing-sm);
   }
 
-  .App {
-    padding: var(--spacing-xl);
+  .login-form {
+    padding: 0;
   }
 
-  .coin-transfer-modal {
-    max-width: 500px;
+  .user-info-content {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .logo-container {
+    width: 130px;
+    height: 130px;
+  }
+
+  .app-logo {
+    width: 110px;
+    height: 110px;
   }
 }
 
-/* Hover Effects */
-.coin-transfer-submit:hover {
-  opacity: 0.9;
+/* Animations */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(127, 255, 212, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(127, 255, 212, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(127, 255, 212, 0);
+  }
 }
 
-.coin-transfer-cancel:hover {
-  background-color: var(--color-gray);
+.pulse {
+  animation: pulse 2s infinite;
 }
 
-.login-form button:hover {
-  background-color: var(--color-gray);
-}
+/* Accessibility */
+@media (prefers-reduced-motion) {
+  .message-box,
+  .coin-transfer-modal,
+  .pulse {
+    animation: none;
+  }
 
-/* Focus Styles */
-input:focus,
-select:focus,
-button:focus {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-} 
+  .coin-transfer-btn:hover,
+  .coin-transfer-submit:hover,
+  .login-form button:hover {
+    transform: none;
+  }
+}

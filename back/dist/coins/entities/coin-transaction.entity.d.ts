@@ -1,4 +1,4 @@
-import { User } from '../../users/entities/user.entity';
+import { User } from "../../users/entities/user.entity";
 export declare class CoinTransaction {
     id: number;
     userId: number;
@@ -8,7 +8,7 @@ export declare class CoinTransaction {
     receiverId: number;
     receiver: User;
     amount: number;
-    type: 'EARN' | 'SPEND' | 'TRANSFER';
+    type: "EARN" | "SPEND" | "TRANSFER";
     description: string;
     createdAt: Date;
 }

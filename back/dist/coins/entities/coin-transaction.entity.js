@@ -60,6 +60,6 @@ __decorate([
     __metadata("design:type", Date)
 ], CoinTransaction.prototype, "createdAt", void 0);
 exports.CoinTransaction = CoinTransaction = __decorate([
-    (0, typeorm_1.Entity)()
+    (0, typeorm_1.Entity)("coin_transactions")
 ], CoinTransaction);
 //# sourceMappingURL=coin-transaction.entity.js.map
