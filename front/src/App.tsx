@@ -1,65 +1,14 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import { userService } from "./api/services/userService";
 import { User } from "./types/user";
 import { rankingService } from "./api/services/rankingService";
 import { RankingUser } from "./types/ranking";
 import { coinService } from "./api/services/coinService";
-
-// App.tsx 파일의 AppContent 컴포넌트 내부
-<>
-  <img src="/logo.png" alt="코딩 마스터 로고" className="app-logo" />
-  <h1 className="app-title">코마데이</h1>
-  {/* 나머지 코드... */}
-</>;
-/**
- * @fileoverview 코마데이(ComaDay) - 실시간 코인 전송 및 랭킹 관리 시스템
- *
- * 백엔드 개발자를 위한 가이드:
- * 1. API 엔드포인트 구현 필요사항:
- *    - POST /api/auth/login: 사용자 로그인
- *    - GET /api/users: 전체 사용자 목록 조회
- *    - GET /api/users/{id}: 특정 사용자 정보 조회
- *    - POST /api/transactions: 코인 전송
- *    - GET /api/transactions: 거래 내역 조회
- *
- * 2. 실시간 업데이트 필요사항:
- *    - WebSocket 연결 필요 (/ws/transactions)
- *    - 실시간 코인 전송 시 전체 사용자에게 알림
- *    - 랭킹 변동 시 실시간 업데이트
- *
- * 3. 데이터 유효성 검사:
- *    - 코인 전송 시 잔액 확인
- *    - 중복 전송 방지
- *    - 동시성 제어
- */
+import AdminPage from "./pages/AdminPage"; // AdminPage 컴포넌트 임포트 추가
 
 // Types
-/**
- * @interface User
- * @description 사용자 정보 인터페이스
- * @property {number} id - 사용자 고유 식별자
- * @property {string} username - 사용자 아이디
- * @property {number} coinCount - 보유 코인 수량
- * @property {boolean} isGuest - 게스트 여부
- * @property {string} lastLoginAt - 마지막 로그인 시간
- *
- * @example
- * // API Response 예시
- * {
- *   "id": 1,
- *   "username": "고재우, 나산하",
- *   "coinCount": 100,
- *   "isGuest": false,
- *   "lastLoginAt": "2023-04-01T12:00:00"
- * }
- */
-
-/**
- * @interface MessageContextType
- * @description 메시지 표시 컨텍스트
- * @note 백엔드에서 에러 응답 시 message 필드를 포함해야 함
- */
 interface MessageContextType {
   message: { text: string; type: "error" | "success" } | null;
   showError: (text: string) => void;
@@ -67,11 +16,6 @@ interface MessageContextType {
   clearMessage: () => void;
 }
 
-/**
- * @interface UserContextType
- * @description 사용자 관리 컨텍스트
- * @note 백엔드 API와 연동 시 이 인터페이스의 메서드들이 API 호출을 수행
- */
 interface UserContextType {
   currentUser: User | null;
   users: User[];
@@ -83,22 +27,6 @@ interface UserContextType {
   ) => Promise<Result<CoinTransferEvent>>;
 }
 
-/**
- * @interface CoinTransferEvent
- * @description 코인 전송 이벤트 데이터 구조
- * @note WebSocket 이벤트 타입으로 사용됨
- *
- * @example
- * // WebSocket 메시지 예시
- * {
- *   "type": "COIN_TRANSFER",
- *   "data": {
- *     "fromUser": { "id": 1, "name": "고재우, 나산하", "coin": 90 },
- *     "toUser": { "id": 2, "name": "김연지, 김채민", "coin": 110 },
- *     "amount": 10
- *   }
- * }
- */
 interface CoinTransferEvent {
   type: "COIN_TRANSFER";
   data: {
@@ -108,30 +36,12 @@ interface CoinTransferEvent {
   };
 }
 
-/**
- * @interface Result
- * @description API 응답 결과 인터페이스
- * @template T - 응답 데이터 타입
- *
- * @example
- * // API 응답 예시
- * {
- *   "success": true,
- *   "data": { ... },
- *   "message": "성공적으로 처리되었습니다."
- * }
- */
 interface Result<T> {
   success: boolean;
   data?: T;
   message?: string;
 }
 
-/**
- * @const MOCK_USERS
- * @description 목업 사용자 데이터 (백엔드 API 구현 시 제거 예정)
- * @note GET /api/users 엔드포인트의 응답 형식과 동일
- */
 const MOCK_USERS: User[] = [
   {
     id: 1,
@@ -294,7 +204,9 @@ const Login = () => {
 const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
   const { currentUser, sendCoin } = useUser();
   const { showError, showSuccess } = useMessage();
-  const [receivers, setReceivers] = useState<{id: number, username: string}[]>([]);
+  const [receivers, setReceivers] = useState<
+    { id: number; username: string }[]
+  >([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [amount, setAmount] = useState("");
   const [keyword, setKeyword] = useState("");
@@ -305,7 +217,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
     }
   }, [currentUser]);
 
-  const filtered = receivers.filter(user =>
+  const filtered = receivers.filter((user) =>
     user.username.toLowerCase().includes(keyword.toLowerCase())
   );
 
@@ -317,7 +229,11 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
     }
 
     try {
-      await coinService.transfer(currentUser.id, Number(selectedUserId), Number(amount));
+      await coinService.transfer(
+        currentUser.id,
+        Number(selectedUserId),
+        Number(amount)
+      );
       showSuccess("코인 전송이 완료되었습니다.");
       setAmount("");
       setSelectedUserId("");
@@ -336,16 +252,16 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
             <label htmlFor="receiver">받는 사람:</label>
             <input
               value={keyword}
-              onChange={e => setKeyword(e.target.value)}
+              onChange={(e) => setKeyword(e.target.value)}
               placeholder="유저명 검색"
-              style={{ marginBottom: '8px', width: '200px' }}
+              style={{ marginBottom: "8px", width: "200px" }}
             />
             <select
               id="receiver"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               className="coin-transfer-select"
-              style={{ width: '200px' }}
+              style={{ width: "200px" }}
             >
               <option value="">선택하세요</option>
               {filtered.map((user) => (
@@ -412,21 +328,11 @@ const MessageProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-/**
- * @provider UserProvider
- * @description 사용자 관리 및 코인 전송 로직
- * @note 백엔드 API 연동 시 수정이 필요한 주요 부분
- */
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const { showError } = useMessage();
 
-  /**
-   * @function login
-   * @description 사용자 로그인 처리
-   * @note POST /api/auth/login 엔드포인트로 대체 필요
-   */
   const login = (user: User) => {
     const found = users.find((u) => u.id === user.id);
     if (found) {
@@ -439,22 +345,6 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => setCurrentUser(null);
 
-  /**
-   * @function sendCoin
-   * @description 코인 전송 처리
-   * @note
-   * 1. POST /api/transactions 엔드포인트로 대체 필요
-   * 2. 트랜잭션 원자성 보장 필요
-   * 3. 동시성 제어 필요 (예: 낙관적 락)
-   *
-   * @example
-   * // API Request 예시
-   * POST /api/transactions
-   * {
-   *   "toUserId": 2,
-   *   "amount": 10
-   * }
-   */
   const sendCoin = async (
     toUserId: number,
     amount: number
@@ -550,11 +440,16 @@ const AppContent = () => {
   );
 };
 
-// Root App Component
+// 라우터가 적용된 Root App Component
 const App = () => (
   <MessageProvider>
     <UserProvider>
-      <AppContent />
+      <Router>
+        <Routes>
+          <Route path="/" element={<AppContent />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </Router>
     </UserProvider>
   </MessageProvider>
 );

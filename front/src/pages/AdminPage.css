@@ -1,0 +1,177 @@
+/* src/pages/AdminPage.css */
+
+/* 기존 관리자 페이지 스타일 */
+.admin-page {
+  padding: 20px;
+}
+
+.admin-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.admin-table-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid black;
+  padding: 8px;
+}
+
+.admin-table th {
+  text-align: center;
+  background-color: #f5f5f5;
+}
+
+.admin-table td.user-id {
+  text-align: center;
+}
+
+.coin-management {
+  display: flex;
+  align-items: center;
+}
+
+.coin-label {
+  display: inline-block;
+  width: 20%;
+}
+
+.coin-input {
+  display: inline-block;
+  width: 20%;
+  padding: 3px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.btn {
+  margin: 0 5px;
+  padding: 5px 10px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-add {
+  background-color: blue;
+}
+
+.btn-subtract {
+  background-color: red;
+}
+
+.btn-approve {
+  background-color: green;
+}
+
+.btn-reject {
+  background-color: orange;
+}
+
+.approval-buttons {
+  text-align: center;
+}
+
+.back-button-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.back-button {
+  padding: 10px 20px;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #333;
+}
+
+/* 관리자 로그인 화면 스타일 추가 */
+.admin-login-container {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.admin-login-title {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.admin-login-error {
+  color: red;
+  margin-bottom: 15px;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.admin-login-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+
+.admin-login-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.admin-login-button {
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.admin-login-button:hover {
+  background-color: #45a049;
+}
+
+/* 로그아웃 버튼 스타일 */
+.admin-logout-container {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.admin-logout-button {
+  padding: 8px 15px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.admin-logout-button:hover {
+  background-color: #d32f2f;
+}
