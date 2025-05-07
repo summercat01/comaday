@@ -25,6 +25,7 @@ interface UserContextType {
     toUserId: number,
     amount: number
   ) => Promise<Result<CoinTransferEvent>>;
+  setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 interface CoinTransferEvent {
@@ -78,7 +79,7 @@ const useMessage = () => {
   return context;
 };
 
-const useUser = () => {
+export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) throw new Error("useUser must be used within a UserProvider");
   return context;
@@ -99,16 +100,15 @@ const MessageBox = () => {
   return <div className={`message-box ${message.type}`}>{message.text}</div>;
 };
 
-const UserInfo = () => {
+const UserInfo = ({ rankings }: { rankings: RankingUser[] }) => {
   const { currentUser } = useUser();
   if (!currentUser) return null;
-
+  const myRanking = rankings.find(r => r.id === currentUser.id);
+  if (!myRanking) return null;
   return (
     <div className="user-info-box">
       <div className="user-info-content">
-        번호: {currentUser.id} <span className="separator">|</span>{" "}
-        {currentUser.username} <span className="separator">|</span> 코인:{" "}
-        {currentUser.coinCount}
+        번호: {myRanking.id} <span className="separator">|</span> {myRanking.username} <span className="separator">|</span> 코인: {myRanking.totalCoins}
       </div>
     </div>
   );
@@ -122,27 +122,30 @@ const RankingTable = () => {
   }, []);
 
   return (
-    <div className="ranking-container">
-      <h2 className="ranking-title">랭킹</h2>
-      <table className="ranking-table">
-        <thead>
-          <tr>
-            <th>순위</th>
-            <th>이름</th>
-            <th>코인</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rankings.map((user) => (
-            <tr key={user.id}>
-              <td>{user.rank}</td>
-              <td>{user.username}</td>
-              <td>{user.totalCoins}</td>
+    <>
+      <UserInfo rankings={rankings} />
+      <div className="ranking-container">
+        <h2 className="ranking-title">랭킹</h2>
+        <table className="ranking-table">
+          <thead>
+            <tr>
+              <th>순위</th>
+              <th>이름</th>
+              <th>코인</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rankings.map((user) => (
+              <tr key={user.id}>
+                <td>{user.rank}</td>
+                <td>{user.username}</td>
+                <td>{user.totalCoins}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 
@@ -399,7 +402,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ currentUser, users, login, logout, sendCoin }}
+      value={{ currentUser, users, login, logout, sendCoin, setCurrentUser }}
     >
       {children}
     </UserContext.Provider>
@@ -442,7 +445,7 @@ const AppContent = () => {
           </div>
           <h1 className="app-title">코마데이</h1>
           <div className="user-section">
-            <UserInfo />
+            <UserInfo rankings={[]} />
           </div>
           <RankingTable />
           <div className="action-section">

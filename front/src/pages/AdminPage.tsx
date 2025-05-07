@@ -98,9 +98,14 @@ const AdminPage = () => {
         amount: finalAmount
       });
       
-      // 사용자 목록 새로고침
-      const response = await axiosInstance.get<AdminUser[]>(API_ENDPOINTS.users);
-      setUsers(response.data);
+      // 사용자 목록과 랭킹 데이터 새로고침
+      const [usersResponse, rankingsResponse] = await Promise.all([
+        axiosInstance.get<AdminUser[]>(API_ENDPOINTS.users),
+        axiosInstance.get(API_ENDPOINTS.ranking)
+      ]);
+      
+      setUsers(usersResponse.data);
+      // 랭킹 데이터도 상태로 관리하고 있다면 여기서 업데이트
       
       // 입력값 초기화
       setInputValues(prev => ({
@@ -111,7 +116,6 @@ const AdminPage = () => {
       alert(`사용자의 코인이 ${action === "추가" ? "추가" : "차감"}되었습니다.`);
     } catch (error: any) {
       console.error('코인 업데이트 오류:', error);
-      // 서버에서 전달한 에러 메시지 표시
       const errorMessage = error.response?.data?.message || "코인 업데이트 중 오류가 발생했습니다.";
       alert(errorMessage);
     }
