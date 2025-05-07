@@ -109,9 +109,11 @@ const AdminPage = () => {
       }));
       
       alert(`사용자의 코인이 ${action === "추가" ? "추가" : "차감"}되었습니다.`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('코인 업데이트 오류:', error);
-      alert("코인 업데이트 중 오류가 발생했습니다.");
+      // 서버에서 전달한 에러 메시지 표시
+      const errorMessage = error.response?.data?.message || "코인 업데이트 중 오류가 발생했습니다.";
+      alert(errorMessage);
     }
   };
 

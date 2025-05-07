@@ -55,8 +55,16 @@ export class UsersService {
     if (!user) {
       throw new Error('사용자를 찾을 수 없습니다.');
     }
+
+    // 코인 차감 시 보유 코인보다 많이 차감할 수 없도록 검증
+    if (amount < 0 && Math.abs(amount) > user.coinCount) {
+      throw new Error('보유한 코인보다 더 많이 차감할 수 없습니다.');
+    }
+
     user.coinCount += amount;
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+    await this.rankingService.updateOrCreateRanking(savedUser.id);
+    return savedUser;
   }
 
   async guestLogin(username: string, password: string): Promise<User> {
