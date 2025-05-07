@@ -12,12 +12,6 @@ export class CoinTransaction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  userId: number;
-
-  @ManyToOne(() => User)
-  user: User;
-
   @Column({ nullable: true })
   senderId: number;
 

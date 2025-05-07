@@ -2,6 +2,9 @@ import React, { useState, useEffect, createContext, useContext } from "react";
 import "./App.css";
 import { userService } from "./api/services/userService";
 import { User } from "./types/user";
+import { rankingService } from "./api/services/rankingService";
+import { RankingUser } from "./types/ranking";
+import { coinService } from "./api/services/coinService";
 
 // App.tsx 파일의 AppContent 컴포넌트 내부
 <>
@@ -202,8 +205,11 @@ const UserInfo = () => {
 };
 
 const RankingTable = () => {
-  const { users } = useUser();
-  const sortedUsers = [...users].sort((a, b) => b.coinCount - a.coinCount);
+  const [rankings, setRankings] = useState<RankingUser[]>([]);
+
+  useEffect(() => {
+    rankingService.getRankings().then(setRankings);
+  }, []);
 
   return (
     <div className="ranking-container">
@@ -217,11 +223,11 @@ const RankingTable = () => {
           </tr>
         </thead>
         <tbody>
-          {sortedUsers.map((user, index) => (
+          {rankings.map((user) => (
             <tr key={user.id}>
-              <td>{index + 1}</td>
+              <td>{user.rank}</td>
               <td>{user.username}</td>
-              <td>{user.coinCount}</td>
+              <td>{user.totalCoins}</td>
             </tr>
           ))}
         </tbody>
@@ -286,31 +292,39 @@ const Login = () => {
 };
 
 const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
-  const { users, currentUser, sendCoin } = useUser();
+  const { currentUser, sendCoin } = useUser();
   const { showError, showSuccess } = useMessage();
+  const [receivers, setReceivers] = useState<{id: number, username: string}[]>([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [amount, setAmount] = useState("");
+  const [keyword, setKeyword] = useState("");
+
+  useEffect(() => {
+    if (currentUser) {
+      userService.getReceivers(currentUser.id).then(setReceivers);
+    }
+  }, [currentUser]);
+
+  const filtered = receivers.filter(user =>
+    user.username.toLowerCase().includes(keyword.toLowerCase())
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUserId || !amount) {
+    if (!selectedUserId || !amount || !currentUser) {
       showError("모든 필드를 입력해주세요.");
       return;
     }
 
-    const result = await sendCoin(Number(selectedUserId), Number(amount));
-    if (!result.success) {
-      showError(result.message || "코인 전송에 실패했습니다.");
-      return;
+    try {
+      await coinService.transfer(currentUser.id, Number(selectedUserId), Number(amount));
+      showSuccess("코인 전송이 완료되었습니다.");
+      setAmount("");
+      setSelectedUserId("");
+      onClose();
+    } catch (error) {
+      showError("코인 전송에 실패했습니다.");
     }
-
-    const toUser = users.find((u) => u.id === Number(selectedUserId));
-    showSuccess(
-      `${toUser?.username || "사용자"}님에게 ${amount}코인을 전송했습니다.`
-    );
-    setAmount("");
-    setSelectedUserId("");
-    onClose();
   };
 
   return (
@@ -320,20 +334,25 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
         <form onSubmit={handleSubmit}>
           <div className="coin-transfer-form-group">
             <label htmlFor="receiver">받는 사람:</label>
+            <input
+              value={keyword}
+              onChange={e => setKeyword(e.target.value)}
+              placeholder="유저명 검색"
+              style={{ marginBottom: '8px', width: '200px' }}
+            />
             <select
               id="receiver"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               className="coin-transfer-select"
+              style={{ width: '200px' }}
             >
               <option value="">선택하세요</option>
-              {users
-                .filter((user) => user.id !== currentUser?.id)
-                .map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.username}
-                  </option>
-                ))}
+              {filtered.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
+              ))}
             </select>
           </div>
           <div className="coin-transfer-form-group">

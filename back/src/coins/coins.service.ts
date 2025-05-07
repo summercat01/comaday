@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 import { User } from '../users/entities/user.entity';
+import { RankingService } from '../ranking/ranking.service';
 
 @Injectable()
 export class CoinsService {
@@ -11,6 +12,7 @@ export class CoinsService {
     private coinTransactionRepository: Repository<CoinTransaction>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private rankingService: RankingService,
   ) {}
 
   async transfer(senderId: number, receiverId: number, amount: number): Promise<CoinTransaction> {
@@ -31,18 +33,22 @@ export class CoinsService {
     await this.userRepository.save([sender, receiver]);
 
     const transaction = this.coinTransactionRepository.create({
-      userId: senderId,
-      amount: -amount,
-      type: 'SPEND',
+      senderId: senderId,
+      receiverId: receiverId,
+      amount: amount,
+      type: 'TRANSFER',
       description: `${receiver.username}님에게 코인 전송`,
     });
 
-    return this.coinTransactionRepository.save(transaction);
+    const savedTransaction = await this.coinTransactionRepository.save(transaction);
+    await this.rankingService.updateOrCreateRanking(senderId);
+    await this.rankingService.updateOrCreateRanking(receiverId);
+    return savedTransaction;
   }
 
   async getTransactions(userId: number): Promise<CoinTransaction[]> {
     return this.coinTransactionRepository.find({
-      where: { userId },
+      where: { senderId: userId },
       order: { createdAt: 'DESC' },
     });
   }
@@ -63,7 +69,7 @@ export class CoinsService {
     await this.userRepository.save(user);
 
     const transaction = this.coinTransactionRepository.create({
-      userId,
+      senderId: userId,
       amount,
       type: 'EARN',
       description,
