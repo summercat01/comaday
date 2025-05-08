@@ -656,3 +656,21 @@ body {
     transform: none;
   }
 }
+
+/* Footer.css */
+.footer {
+  margin-top: 30px;
+  padding: 10px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+  width: 100%;
+}
+
+.footer-developer {
+  margin-bottom: 5px;
+}
+
+.footer-copyright {
+  margin-top: 5px;
+}

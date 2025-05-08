@@ -8,7 +8,6 @@ import { RankingUser } from "./types/ranking";
 import { coinService } from "./api/services/coinService";
 import AdminPage from "./pages/AdminPage"; // AdminPage 컴포넌트 임포트 추가
 
-
 // Types
 interface MessageContextType {
   message: { text: string; type: "error" | "success" } | null;
@@ -104,12 +103,14 @@ const MessageBox = () => {
 const UserInfo = ({ rankings }: { rankings: RankingUser[] }) => {
   const { currentUser } = useUser();
   if (!currentUser) return null;
-  const myRanking = rankings.find(r => r.id === currentUser.id);
+  const myRanking = rankings.find((r) => r.id === currentUser.id);
   if (!myRanking) return null;
   return (
     <div className="user-info-box">
       <div className="user-info-content">
-        번호: {myRanking.id} <span className="separator">|</span> {myRanking.username} <span className="separator">|</span> 코인: {myRanking.totalCoins}
+        번호: {myRanking.id} <span className="separator">|</span>{" "}
+        {myRanking.username} <span className="separator">|</span> 코인:{" "}
+        {myRanking.totalCoins}
       </div>
     </div>
   );
@@ -260,7 +261,10 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
       <div className="coin-transfer-modal" onClick={(e) => e.stopPropagation()}>
         <h2 className="coin-transfer-title">코인 전송</h2>
         <form onSubmit={handleSubmit}>
-          <div className="coin-transfer-form-group" style={{ position: 'relative', width: '200px' }}>
+          <div
+            className="coin-transfer-form-group"
+            style={{ position: "relative", width: "200px" }}
+          >
             <label htmlFor="receiver">받는 사람:</label>
             <input
               value={keyword}
@@ -291,7 +295,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
                   listStyle: "none",
                   margin: 0,
                   padding: 0,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 }}
               >
                 {filtered.map((user) => (
@@ -301,7 +305,8 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
                       padding: "8px",
                       cursor: "pointer",
                       borderBottom: "1px solid #eee",
-                      background: selectedUserId === String(user.id) ? '#e6fff7' : '#fff'
+                      background:
+                        selectedUserId === String(user.id) ? "#e6fff7" : "#fff",
                     }}
                     onMouseDown={() => {
                       setSelectedUserId(user.id.toString());
@@ -327,7 +332,11 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
             />
           </div>
           <div className="coin-transfer-button-group">
-            <button type="submit" className="coin-transfer-submit" disabled={isSubmitting}>
+            <button
+              type="submit"
+              className="coin-transfer-submit"
+              disabled={isSubmitting}
+            >
               전송
             </button>
             <button
@@ -374,7 +383,7 @@ const MessageProvider = ({ children }: { children: React.ReactNode }) => {
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('currentUser');
+    const saved = localStorage.getItem("currentUser");
     return saved ? JSON.parse(saved) : null;
   });
   const [users, setUsers] = useState<User[]>([]);
@@ -382,14 +391,14 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = (user: User) => {
     setCurrentUser(user);
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem("currentUser", JSON.stringify(user));
     const found = users.find((u) => u.id === user.id);
     if (!found) setUsers((prev) => [...prev, user]);
   };
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem("currentUser");
   };
 
   const sendCoin = async (
@@ -462,16 +471,16 @@ const AppContent = () => {
         <button
           onClick={logout}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 24,
             right: 32,
             zIndex: 1000,
-            padding: '8px 16px',
-            background: '#fff',
-            border: '1px solid #ddd',
-            borderRadius: '20px',
-            cursor: 'pointer',
-            fontWeight: 600
+            padding: "8px 16px",
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: "20px",
+            cursor: "pointer",
+            fontWeight: 600,
           }}
         >
           로그아웃
@@ -502,6 +511,12 @@ const AppContent = () => {
           )}
         </>
       )}
+      <footer className="footer">
+        <div className="footer-developer">
+          Developed by 고재우 나산하 김선우
+        </div>
+        <div className="footer-copyright">©Coma</div>
+      </footer>
     </div>
   );
 };
