@@ -7,7 +7,6 @@ import { rankingService } from "./api/services/rankingService";
 import { RankingUser } from "./types/ranking";
 import { coinService } from "./api/services/coinService";
 import AdminPage from "./pages/AdminPage"; // AdminPage 컴포넌트 임포트 추가
-import Select from "react-select";
 
 
 // Types
@@ -246,6 +245,9 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
       setAmount("");
       setSelectedUserId("");
       onClose();
+      setTimeout(() => {
+        window.location.reload();
+      }, 700); // 0.7초 후 새로고침
     } catch (error) {
       showError("코인 전송에 실패했습니다.");
     } finally {
