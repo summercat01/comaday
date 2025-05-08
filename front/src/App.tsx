@@ -7,6 +7,8 @@ import { rankingService } from "./api/services/rankingService";
 import { RankingUser } from "./types/ranking";
 import { coinService } from "./api/services/coinService";
 import AdminPage from "./pages/AdminPage"; // AdminPage 컴포넌트 임포트 추가
+import Select from "react-select";
+
 
 // Types
 interface MessageContextType {
@@ -213,6 +215,8 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [amount, setAmount] = useState("");
   const [keyword, setKeyword] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -226,11 +230,12 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!selectedUserId || !amount || !currentUser) {
       showError("모든 필드를 입력해주세요.");
       return;
     }
-
+    setIsSubmitting(true);
     try {
       await coinService.transfer(
         currentUser.id,
@@ -243,6 +248,8 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
       onClose();
     } catch (error) {
       showError("코인 전송에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -251,28 +258,60 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
       <div className="coin-transfer-modal" onClick={(e) => e.stopPropagation()}>
         <h2 className="coin-transfer-title">코인 전송</h2>
         <form onSubmit={handleSubmit}>
-          <div className="coin-transfer-form-group">
+          <div className="coin-transfer-form-group" style={{ position: 'relative', width: '200px' }}>
             <label htmlFor="receiver">받는 사람:</label>
             <input
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setShowDropdown(true);
+                setSelectedUserId("");
+              }}
               placeholder="유저명 검색"
-              style={{ marginBottom: "8px", width: "200px" }}
+              style={{ marginBottom: "8px", width: "100%" }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 100)}
+              className="coin-transfer-input"
             />
-            <select
-              id="receiver"
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              className="coin-transfer-select"
-              style={{ width: "200px" }}
-            >
-              <option value="">선택하세요</option>
-              {filtered.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.username}
-                </option>
-              ))}
-            </select>
+            {showDropdown && filtered.length > 0 && (
+              <ul
+                style={{
+                  position: "absolute",
+                  top: "56px",
+                  left: 0,
+                  width: "100%",
+                  background: "#fff",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  maxHeight: "150px",
+                  overflowY: "auto",
+                  zIndex: 10,
+                  listStyle: "none",
+                  margin: 0,
+                  padding: 0,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                }}
+              >
+                {filtered.map((user) => (
+                  <li
+                    key={user.id}
+                    style={{
+                      padding: "8px",
+                      cursor: "pointer",
+                      borderBottom: "1px solid #eee",
+                      background: selectedUserId === String(user.id) ? '#e6fff7' : '#fff'
+                    }}
+                    onMouseDown={() => {
+                      setSelectedUserId(user.id.toString());
+                      setKeyword(`${user.id}.${user.username}`);
+                      setShowDropdown(false);
+                    }}
+                  >
+                    {user.id}.{user.username}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div className="coin-transfer-form-group">
             <label htmlFor="amount">코인 수량:</label>
@@ -286,7 +325,7 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
             />
           </div>
           <div className="coin-transfer-button-group">
-            <button type="submit" className="coin-transfer-submit">
+            <button type="submit" className="coin-transfer-submit" disabled={isSubmitting}>
               전송
             </button>
             <button
