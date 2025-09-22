@@ -1,0 +1,362 @@
+/* 방 목록 페이지 스타일 */
+.room-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.room-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.room-list-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 2em;
+  font-weight: 700;
+}
+
+.room-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.create-room-btn, .refresh-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.create-room-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.create-room-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.refresh-btn {
+  background: #2196F3;
+  color: white;
+}
+
+.refresh-btn:hover {
+  background: #1976D2;
+  transform: translateY(-2px);
+}
+
+/* 방 그리드 */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.room-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.room-name {
+  margin: 0;
+  color: #333;
+  font-size: 1.3em;
+  font-weight: 600;
+  flex: 1;
+  word-break: break-word;
+}
+
+.room-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.room-status.waiting {
+  background: #e8f5e8;
+  color: #2e7d2e;
+}
+
+.room-status.playing {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.room-status.finished {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.room-description {
+  color: #666;
+  margin: 10px 0;
+  line-height: 1.4;
+  font-size: 0.9em;
+}
+
+.room-info {
+  margin: 15px 0;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+}
+
+.info-item .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.info-item .value {
+  color: #333;
+  font-weight: 600;
+}
+
+.room-code {
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  letter-spacing: 1px;
+}
+
+.room-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.join-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #2196F3;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.join-btn:hover:not(.disabled) {
+  background: #1976D2;
+  transform: translateY(-1px);
+}
+
+.join-btn.disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* 빈 상태 */
+.no-rooms {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.no-rooms p {
+  margin: 10px 0;
+  color: #666;
+  font-size: 1.1em;
+}
+
+.loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: white;
+  font-size: 1.2em;
+}
+
+/* 방 생성 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.create-room-modal {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.create-room-modal h2 {
+  margin: 0 0 25px 0;
+  color: #333;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 0.85em;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.cancel-btn, .create-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.create-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.create-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.create-btn:disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .room-list-container {
+    padding: 15px;
+  }
+  
+  .room-list-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .room-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .room-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .create-room-modal {
+    margin: 20px;
+    width: calc(100% - 40px);
+  }
+}

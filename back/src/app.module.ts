@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { CoinsModule } from './coins/coins.module';
 import { RankingModule } from './ranking/ranking.module';
 import { AuthModule } from './auth/auth.module';
+import { RoomsModule } from './rooms/rooms.module';
 import configuration from './config/configuration';
 import { getTypeOrmConfig } from './config/typeorm.config';
 
@@ -36,6 +37,7 @@ import { getTypeOrmConfig } from './config/typeorm.config';
     UsersModule,
     CoinsModule,
     RankingModule,
+    RoomsModule,
   ],
 })
 export class AppModule {} 

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   const config: TypeOrmModuleOptions = {
-    type: 'mysql',
+    type: 'postgres',
     host: configService.get('database.host'),
     port: configService.get('database.port'),
     username: configService.get('database.username'),
@@ -12,13 +12,12 @@ export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOpt
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: configService.get('database.synchronize'),
     logging: ['error', 'query', 'schema'],
-    ssl: false,
+    ssl: configService.get('database.ssl', false),
     extra: {
-      authPlugins: {
-        mysql_native_password: () => () => Buffer.from([0])
-      }
-    },
-    driver: require('mysql2')
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    }
   };
 
   console.log('Database Configuration:', {

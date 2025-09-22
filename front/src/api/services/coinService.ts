@@ -16,12 +16,12 @@ export const coinService = {
     return response.data;
   },
 
-  transfer: async (senderId: number, receiverId: number, amount: number, description?: string): Promise<CoinTransaction> => {
+  transfer: async (senderId: number, receiverId: number, amount: number, roomCode?: string): Promise<CoinTransaction> => {
     const response = await axiosInstance.post<CoinTransaction>(`${API_ENDPOINTS.coins}/transfer`, {
       senderId,
       receiverId,
       amount,
-      description,
+      roomCode,
     });
     return response.data;
   },

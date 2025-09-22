@@ -135,8 +135,10 @@ body {
 .action-section {
   display: flex;
   justify-content: center;
+  gap: 15px;
   margin: var(--spacing-xl) 0;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 /* User Info Box */
@@ -229,6 +231,33 @@ body {
 }
 
 /* Buttons */
+.room-btn {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--box-shadow);
+}
+
+.room-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-3px);
+  box-shadow: var(--box-shadow-lg);
+}
+
+.room-btn:active {
+  transform: translateY(-1px);
+}
+
 .coin-transfer-btn {
   display: block;
   width: 100%;
