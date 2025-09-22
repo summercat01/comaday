@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import "./AdminPage.css";
 import axiosInstance from "../api/axiosInstance";
 import { API_ENDPOINTS } from "../api/endpoints";
-// import { User } from "../types/user";
+import { User } from "../types/user";
 
 // 관리자 페이지에서 사용할 사용자 타입
 interface AdminUser {
@@ -99,8 +99,9 @@ const AdminPage = () => {
       });
       
       // 사용자 목록과 랭킹 데이터 새로고침
-      const [usersResponse] = await Promise.all([
-        axiosInstance.get<AdminUser[]>(API_ENDPOINTS.users)
+      const [usersResponse, rankingsResponse] = await Promise.all([
+        axiosInstance.get<AdminUser[]>(API_ENDPOINTS.users),
+        axiosInstance.get(API_ENDPOINTS.ranking)
       ]);
       
       setUsers(usersResponse.data);
@@ -230,21 +231,6 @@ const AdminPage = () => {
         </table>
       </div>
       )}
-
-      {/* 거래 제한 설정 섹션 */}
-      <div className="admin-section">
-        <h2 className="admin-section-title">거래 제한 설정</h2>
-        <div className="limit-settings">
-          <div className="setting-item">
-            <span className="setting-label">연속 거래 제한:</span>
-            <span className="setting-value">같은 사용자와 3회 연속 거래 금지</span>
-            <span className="setting-status active">활성화</span>
-          </div>
-          <div className="setting-description">
-            💡 두 사용자 간 연속된 포인트 거래를 제한하여 공정한 경쟁을 유도합니다.
-          </div>
-        </div>
-      </div>
 
       <div className="back-button-container">
         <button

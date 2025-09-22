@@ -3,5 +3,4 @@ export const API_ENDPOINTS = {
   coins: '/coins',
   ranking: '/ranking',
   auth: '/auth',
-  rooms: '/rooms',
 } as const; 

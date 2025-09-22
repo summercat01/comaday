@@ -7,8 +7,6 @@ import { rankingService } from "./api/services/rankingService";
 import { RankingUser } from "./types/ranking";
 import { coinService } from "./api/services/coinService";
 import AdminPage from "./pages/AdminPage"; // AdminPage 컴포넌트 임포트 추가
-import RoomListPage from "./pages/RoomListPage";
-import RoomPage from "./pages/RoomPage";
 
 // Types
 interface MessageContextType {
@@ -45,7 +43,6 @@ interface Result<T> {
   message?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MOCK_USERS: User[] = [
   {
     id: 1,
@@ -210,12 +207,8 @@ const Login = () => {
 };
 
 const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
-  const { currentUser } = useUser();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { sendCoin } = useUser();
-  const { showSuccess } = useMessage();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { showError } = useMessage();
+  const { currentUser, sendCoin } = useUser();
+  const { showError, showSuccess } = useMessage();
   const [receivers, setReceivers] = useState<
     { id: number; username: string }[]
   >([]);
@@ -256,10 +249,8 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
       setTimeout(() => {
         window.location.reload();
       }, 700); // 0.7초 후 새로고침
-    } catch (error: any) {
-      // 백엔드에서 온 구체적인 에러 메시지 표시
-      const errorMessage = error.response?.data?.message || "코인 전송에 실패했습니다.";
-      showError(errorMessage);
+    } catch (error) {
+      showError("코인 전송에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -469,7 +460,7 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Main App Content
-const AppContent = ({ onGoToRooms }: { onGoToRooms: () => void }) => {
+const AppContent = () => {
   const { currentUser, logout } = useUser();
   const [showTransfer, setShowTransfer] = useState(false);
 
@@ -509,16 +500,10 @@ const AppContent = ({ onGoToRooms }: { onGoToRooms: () => void }) => {
           <RankingTable />
           <div className="action-section">
             <button
-              className="room-btn"
-              onClick={onGoToRooms}
-            >
-              🏠 게임 방
-            </button>
-            <button
               className="coin-transfer-btn"
               onClick={() => setShowTransfer(true)}
             >
-              💰 코인 전송
+              코인 전송
             </button>
           </div>
           {showTransfer && (
@@ -537,57 +522,17 @@ const AppContent = ({ onGoToRooms }: { onGoToRooms: () => void }) => {
 };
 
 // 라우터가 적용된 Root App Component
-const App = () => {
-  const [currentView, setCurrentView] = useState<'main' | 'rooms' | 'room'>('main');
-  const [currentRoomCode, setCurrentRoomCode] = useState<string>('');
-
-  const handleJoinRoom = (roomCode: string) => {
-    setCurrentRoomCode(roomCode);
-    setCurrentView('room');
-  };
-
-  const handleLeaveRoom = () => {
-    setCurrentRoomCode('');
-    setCurrentView('rooms');
-  };
-
-  const handleGoToRooms = () => {
-    setCurrentView('rooms');
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleGoToMain = () => {
-    setCurrentView('main');
-  };
-
-  return (
-    <MessageProvider>
-      <UserProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={
-              currentView === 'main' ? (
-                <AppContent onGoToRooms={handleGoToRooms} />
-              ) : currentView === 'rooms' ? (
-                <RoomListPage 
-                  onJoinRoom={handleJoinRoom}
-                  onCreateRoom={() => {}}
-                />
-              ) : currentView === 'room' ? (
-                <RoomPage 
-                  roomCode={currentRoomCode}
-                  onLeaveRoom={handleLeaveRoom}
-                />
-              ) : (
-                <AppContent onGoToRooms={handleGoToRooms} />
-              )
-            } />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
-        </Router>
-      </UserProvider>
-    </MessageProvider>
-  );
-};
+const App = () => (
+  <MessageProvider>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<AppContent />} />
+          <Route path="/admin" element={<AdminPage />} />
+        </Routes>
+      </Router>
+    </UserProvider>
+  </MessageProvider>
+);
 
 export default App;
