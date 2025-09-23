@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 워크스페이스 루트 경고 해결
+  outputFileTracingRoot: __dirname,
+  
   // 실험적 기능 활성화 (Next.js 15 기능)
   experimental: {
     // 빌드 최적화
