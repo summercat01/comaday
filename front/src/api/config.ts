@@ -1,4 +1,8 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+// 개발 환경에서는 Next.js 프록시 사용, 프로덕션에서는 직접 API 호출
+const isDevelopment = process.env.NODE_ENV === 'development';
+export const API_BASE_URL = isDevelopment 
+  ? '' // Next.js 프록시 사용 (CORS 우회)
+  : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 // API 글로벌 prefix
 const API_PREFIX = '/api';
