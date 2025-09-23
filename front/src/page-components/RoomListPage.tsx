@@ -112,62 +112,88 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
     );
   }
 
+  // 방 배치 순서 변경: 1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6
+  const reorderRooms = (rooms: LobbyRoom[]): LobbyRoom[] => {
+    const sorted = [...rooms].sort((a, b) => a.roomNumber - b.roomNumber);
+    const reordered: LobbyRoom[] = [];
+    
+    // 첫 6개 방 (1-6)과 다음 5개 방 (7-11)으로 분리
+    const firstHalf = sorted.slice(0, 6); // 1-6
+    const secondHalf = sorted.slice(6, 11); // 7-11
+    
+    // 1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6 순서로 배치
+    for (let i = 0; i < firstHalf.length; i++) {
+      reordered.push(firstHalf[i]); // 1, 2, 3, 4, 5, 6
+      if (secondHalf[i]) {
+        reordered.push(secondHalf[i]); // 7, 8, 9, 10, 11
+      }
+    }
+    
+    return reordered;
+  };
+
+  const orderedRooms = reorderRooms(rooms);
+
   return (
-    <div className="min-h-screen p-5 max-w-6xl mx-auto" style={{ backgroundColor: 'var(--color-background)' }}>
-      <div className="text-center mb-8 card">
-        <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--color-text-title)' }}>
+    <div className="min-h-screen p-3 sm:p-5 max-w-6xl mx-auto" style={{ backgroundColor: 'var(--color-background)' }}>
+      <div className="text-center mb-6 sm:mb-8 card">
+        <h1 className="text-2xl sm:text-4xl font-bold mb-3" style={{ color: 'var(--color-text-title)' }}>
           🎲 게임 방 목록
         </h1>
-        <div className="text-lg font-medium" style={{ color: 'var(--color-text-light)' }}>
+        <div className="text-sm sm:text-lg font-medium" style={{ color: 'var(--color-text-light)' }}>
           총 {rooms.length}개의 방 | 활성 방: {rooms.filter(r => r.memberCount > 0).length}개
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
-        {rooms.map((room) => (
-          <div key={room.roomCode} className="card hover-lift min-h-80 flex flex-col">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:gap-5 max-w-5xl mx-auto">
+        {orderedRooms.map((room) => (
+          <div key={room.roomCode} className="card hover-lift flex flex-col min-h-[280px] sm:min-h-80">
             {/* 방 헤더 */}
             <div className="card-header">
-              <div className="flex-1">
-                <h3 className="card-title">{room.name}</h3>
-                <span 
-                  className="inline-block px-3 py-1 rounded-full text-sm font-semibold tracking-wide"
-                  style={{ 
-                    backgroundColor: 'var(--color-primary)', 
-                    color: 'var(--color-secondary)' 
-                  }}
-                >
-                  {room.roomCode} (방 #{room.roomNumber})
-                </span>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div
-                  className="w-4 h-4 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: getStatusColor(room) }}
-                ></div>
-                <span className="text-sm font-semibold" style={{ color: 'var(--color-text-title)' }}>
-                  {getStatusText(room)}
-                </span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm sm:text-lg font-bold mb-1 sm:mb-2 truncate" style={{ color: 'var(--color-text-title)' }}>
+                  {room.name}
+                </h3>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <span 
+                    className="inline-block px-2 py-1 rounded-full text-xs font-semibold tracking-wide"
+                    style={{ 
+                      backgroundColor: 'var(--color-primary)', 
+                      color: 'var(--color-secondary)' 
+                    }}
+                  >
+                    방 #{room.roomNumber}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-white shadow-sm"
+                      style={{ backgroundColor: getStatusColor(room) }}
+                    ></div>
+                    <span className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-title)' }}>
+                      {getStatusText(room)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* 방 정보 */}
-            <div className="mb-5 flex-1">
-              <h4 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-title)' }}>
+            <div className="mb-3 sm:mb-5 flex-1">
+              <h4 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-3" style={{ color: 'var(--color-text-title)' }}>
                 📊 방 정보
               </h4>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center py-2 px-3 rounded-lg" 
+              <div className="space-y-1 sm:space-y-2">
+                <div className="flex justify-between items-center py-1 sm:py-2 px-2 sm:px-3 rounded-lg" 
                      style={{ backgroundColor: 'var(--color-gray)' }}>
-                  <span style={{ color: 'var(--color-text)' }}>최대 인원</span>
-                  <span className="font-semibold" style={{ color: 'var(--color-text-title)' }}>
+                  <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text)' }}>최대 인원</span>
+                  <span className="font-semibold text-xs sm:text-sm" style={{ color: 'var(--color-text-title)' }}>
                     {room.maxMembers}명
                   </span>
                 </div>
-                <div className="flex justify-between items-center py-2 px-3 rounded-lg" 
+                <div className="flex justify-between items-center py-1 sm:py-2 px-2 sm:px-3 rounded-lg" 
                      style={{ backgroundColor: 'var(--color-gray)' }}>
-                  <span style={{ color: 'var(--color-text)' }}>현재 인원</span>
-                  <span className="font-semibold" style={{ color: 'var(--color-primary-dark)' }}>
+                  <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text)' }}>현재 인원</span>
+                  <span className="font-semibold text-xs sm:text-sm" style={{ color: 'var(--color-primary-dark)' }}>
                     {room.memberCount}명
                   </span>
                 </div>
@@ -175,15 +201,15 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
             </div>
 
             {/* 인원 현황 */}
-            <div className="mb-5 p-4 rounded-xl border-l-4"
+            <div className="mb-3 sm:mb-4 p-2 sm:p-4 rounded-xl border-l-4"
                  style={{
                    backgroundColor: 'var(--color-gray)',
                    borderLeftColor: 'var(--color-primary)'
                  }}>
-              <div className="font-semibold mb-2" style={{ color: 'var(--color-text-title)' }}>
-                👥 참여 현황: {room.memberCount}/{room.maxMembers}
+              <div className="font-semibold mb-1 sm:mb-2 text-xs sm:text-sm" style={{ color: 'var(--color-text-title)' }}>
+                👥 {room.memberCount}/{room.maxMembers}
               </div>
-              <div className="w-full bg-white rounded-full h-3 overflow-hidden border" 
+              <div className="w-full bg-white rounded-full h-2 sm:h-3 overflow-hidden border" 
                    style={{ borderColor: 'var(--color-border)' }}>
                 <div 
                   className="h-full transition-all duration-300 rounded-full"
@@ -200,13 +226,13 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
             </div>
 
             {/* 입장 버튼 */}
-            <div className="mt-auto pt-4">
+            <div className="mt-auto pt-2 sm:pt-4">
               <button
-                className={room.memberCount >= room.maxMembers ? 'btn-disabled w-full' : 'btn-primary w-full'}
+                className={`${room.memberCount >= room.maxMembers ? 'btn-disabled' : 'btn-primary'} w-full text-xs sm:text-sm py-2 sm:py-3`}
                 onClick={() => handleJoinRoom(room)}
                 disabled={room.memberCount >= room.maxMembers}
               >
-                {room.memberCount >= room.maxMembers ? '🚫 가득참' : '🚪 입장하기'}
+                {room.memberCount >= room.maxMembers ? '🚫 가득참' : '🚪 입장'}
               </button>
             </div>
           </div>
@@ -214,9 +240,9 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
       </div>
 
       {/* 새로고침 안내 */}
-      <div className="text-center mt-8 p-4 rounded-xl" 
+      <div className="text-center mt-4 sm:mt-8 p-3 sm:p-4 rounded-xl" 
            style={{ backgroundColor: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)' }}>
-        <p className="text-sm" style={{ color: 'var(--color-success)' }}>
+        <p className="text-xs sm:text-sm" style={{ color: 'var(--color-success)' }}>
           💡 방 목록은 3초마다 자동으로 새로고침됩니다
         </p>
       </div>
