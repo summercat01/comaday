@@ -1,6 +1,5 @@
 // src/pages/AdminPage.tsx
 import React, { useState, useEffect } from "react";
-import "./AdminPage.css";
 import axiosInstance from "../api/axiosInstance";
 import { API_ENDPOINTS } from "../api/endpoints";
 // import { User } from "../types/user";
@@ -129,130 +128,184 @@ const AdminPage = () => {
   // 비밀번호 입력 화면
   if (!authenticated) {
     return (
-      <div className="admin-login-container">
-        <h1 className="admin-login-title">관리자 로그인</h1>
-        {error && <p className="admin-login-error">{error}</p>}
-        <form className="admin-login-form" onSubmit={handlePasswordSubmit}>
-          <div className="admin-login-input-group">
-            <label htmlFor="admin-password">비밀번호:</label>
-            <input
-              id="admin-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="admin-login-input"
-            />
-          </div>
-          <button type="submit" className="admin-login-button">
-            로그인
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center p-5">
+        <div className="card w-full max-w-md">
+          <h1 className="text-3xl font-bold text-center text-coma-dark mb-8">🔐 관리자 로그인</h1>
+          {error && (
+            <div className="message-error mb-6">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="admin-password" className="block text-sm font-semibold text-coma-dark">
+                비밀번호:
+              </label>
+              <input
+                id="admin-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
+                placeholder="관리자 비밀번호를 입력하세요"
+              />
+            </div>
+            <button type="submit" className="btn-danger w-full text-lg">
+              로그인
+            </button>
+          </form>
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="btn-primary w-full mt-4"
+          >
+            메인으로 돌아가기
           </button>
-        </form>
-        <button
-          onClick={() => (window.location.href = "/")}
-          className="back-button"
-        >
-          메인으로 돌아가기
-        </button>
+        </div>
       </div>
     );
   }
 
   // 관리자 페이지 내용 (인증 후 표시)
   return (
-    <div className="admin-page">
-      <h1 className="admin-title">관리자 페이지</h1>
-      <div className="admin-logout-container">
-        <button onClick={handleLogout} className="admin-logout-button">
-          로그아웃
-        </button>
-      </div>
-
-      {loadError && <div className="error-message">{loadError}</div>}
-      {loading ? (
-        <div className="loading-message">사용자 데이터를 불러오는 중입니다...</div>
-      ) : (
-      <div className="admin-table-container">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>회원 정보</th>
-              <th>코인 관리</th>
-              <th>계정 상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="user-id">
-                  <div>
-                    <p><strong>ID:</strong> {user.id}</p>
-                    <p><strong>사용자명:</strong> {user.username}</p>
-                    <p><strong>가입일:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
-                    <p><strong>관리자:</strong> {user.isAdmin ? "예" : "아니오"}</p>
-                  </div>
-                </td>
-                <td>
-                  <div className="coin-management">
-                    <span className="coin-label">현재 보유 코인: <strong>{user.coinCount}</strong></span>
-                    <input
-                      type="number"
-                      min="1"
-                      className="coin-input"
-                      value={inputValues[user.id] || ""}
-                      placeholder="코인 수량 입력"
-                      onChange={(e) =>
-                        handleInputChange(user.id, e.target.value)
-                      }
-                    />
-                    <button
-                      className="btn btn-add"
-                      onClick={() => handleCoinUpdate("추가", user.id)}
-                    >
-                      추가
-                    </button>
-                    <button
-                      className="btn btn-subtract"
-                      onClick={() => handleCoinUpdate("차감", user.id)}
-                    >
-                      차감
-                    </button>
-                  </div>
-                </td>
-                <td className="user-status">
-                  <div>
-                    <p><strong>게스트:</strong> {user.isGuest ? "예" : "아니오"}</p>
-                    <p><strong>마지막 로그인:</strong> {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "없음"}</p>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      )}
-
-      {/* 거래 제한 설정 섹션 */}
-      <div className="admin-section">
-        <h2 className="admin-section-title">거래 제한 설정</h2>
-        <div className="limit-settings">
-          <div className="setting-item">
-            <span className="setting-label">연속 거래 제한:</span>
-            <span className="setting-value">같은 사용자와 3회 연속 거래 금지</span>
-            <span className="setting-status active">활성화</span>
-          </div>
-          <div className="setting-description">
-            💡 두 사용자 간 연속된 포인트 거래를 제한하여 공정한 경쟁을 유도합니다.
+    <div className="min-h-screen bg-gray-50 p-5">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* 헤더 */}
+        <div className="card">
+          <div className="flex justify-between items-center">
+            <h1 className="text-4xl font-bold text-coma-dark">⚙️ 관리자 페이지</h1>
+            <button onClick={handleLogout} className="btn-danger">
+              로그아웃
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="back-button-container">
-        <button
-          onClick={() => (window.location.href = "/")}
-          className="back-button"
-        >
-          메인으로 돌아가기
-        </button>
+        {/* 오류 및 로딩 상태 */}
+        {loadError && (
+          <div className="message-error">
+            {loadError}
+          </div>
+        )}
+        
+        {loading ? (
+          <div className="card text-center">
+            <div className="loading-spinner mx-auto mb-4"></div>
+            <p className="text-gray-600">사용자 데이터를 불러오는 중입니다...</p>
+          </div>
+        ) : (
+          /* 사용자 관리 테이블 */
+          <div className="card">
+            <h2 className="card-title mb-6">👥 사용자 관리</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-coma-red text-white">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-semibold">회원 정보</th>
+                    <th className="px-6 py-4 text-left font-semibold">코인 관리</th>
+                    <th className="px-6 py-4 text-left font-semibold">계정 상태</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {users.map((user, index) => (
+                    <tr key={user.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-red-50 transition-colors`}>
+                      <td className="px-6 py-4">
+                        <div className="space-y-2">
+                          <p className="font-semibold text-coma-dark">
+                            <span className="text-gray-600">ID:</span> {user.id}
+                          </p>
+                          <p className="font-medium">
+                            <span className="text-gray-600">사용자명:</span> {user.username}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">가입일:</span> {new Date(user.createdAt).toLocaleDateString()}
+                          </p>
+                          <p className="text-sm">
+                            <span className="text-gray-600">관리자:</span> 
+                            <span className={`ml-1 px-2 py-1 rounded-full text-xs font-semibold ${user.isAdmin ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
+                              {user.isAdmin ? "예" : "아니오"}
+                            </span>
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-600">현재 보유 코인:</span>
+                            <span className="font-bold text-coma-green text-lg">{user.coinCount.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              min="1"
+                              className="input-field text-sm flex-1"
+                              value={inputValues[user.id] || ""}
+                              placeholder="수량 입력"
+                              onChange={(e) => handleInputChange(user.id, e.target.value)}
+                            />
+                            <button
+                              className="btn-success text-sm px-3 py-2"
+                              onClick={() => handleCoinUpdate("추가", user.id)}
+                            >
+                              ➕ 추가
+                            </button>
+                            <button
+                              className="btn-danger text-sm px-3 py-2"
+                              onClick={() => handleCoinUpdate("차감", user.id)}
+                            >
+                              ➖ 차감
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-2">
+                          <p className="text-sm">
+                            <span className="text-gray-600">게스트:</span>
+                            <span className={`ml-1 px-2 py-1 rounded-full text-xs font-semibold ${user.isGuest ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+                              {user.isGuest ? "예" : "아니오"}
+                            </span>
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            <span className="font-medium">마지막 로그인:</span><br />
+                            {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "없음"}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* 거래 제한 설정 섹션 */}
+        <div className="card">
+          <h2 className="card-title mb-6">⚖️ 거래 제한 설정</h2>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-coma-dark">연속 거래 제한:</span>
+                <span className="text-gray-700">같은 사용자와 3회 연속 거래 금지</span>
+              </div>
+              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                ✅ 활성화
+              </span>
+            </div>
+            <div className="text-sm text-blue-700 bg-blue-100 p-3 rounded-lg">
+              💡 두 사용자 간 연속된 포인트 거래를 제한하여 공정한 경쟁을 유도합니다.
+            </div>
+          </div>
+        </div>
+
+        {/* 메인으로 돌아가기 버튼 */}
+        <div className="text-center">
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="btn-primary text-lg px-8"
+          >
+            🏠 메인으로 돌아가기
+          </button>
+        </div>
       </div>
     </div>
   );

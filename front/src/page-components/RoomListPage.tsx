@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useUser } from '../components/providers';
-import './RoomListPage.css';
 
 interface RoomListPageProps {
   onJoinRoom: (roomCode: string) => void;
@@ -136,8 +135,8 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
 
   // 방 상태 텍스트
   const getStatusText = (room: MockRoom) => {
-    if (room.status === 'playing') return '게임중';
-    if (room.status === 'full') return '만원';
+    if (room.status === 'playing') return '대기중';
+    if (room.status === 'full') return '가득참';
     return '대기중';
   };
 
@@ -151,86 +150,90 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
       alert('방이 가득 찼습니다.');
       return;
     }
-    
-    if (room.status === 'playing') {
-      alert('게임이 진행 중입니다.');
-      return;
-    }
 
     onJoinRoom(room.roomNumber);
   };
 
   if (!currentUser) {
     return (
-      <div className="room-list-container">
-        <div className="login-required">
-          <h2>로그인이 필요합니다</h2>
-          <p>방 목록을 보려면 먼저 로그인해주세요.</p>
+      <div className="min-h-screen bg-gray-50 p-5 max-w-6xl mx-auto">
+        <div className="text-center py-15 card">
+          <h2 className="text-red-500 text-2xl font-bold mb-4">로그인이 필요합니다</h2>
+          <p className="text-gray-600 text-lg">방 목록을 보려면 먼저 로그인해주세요.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="room-list-container">
-      <div className="room-list-header">
-        <h1>🎲 게임 방 목록</h1>
-        <div className="room-count">총 {rooms.length}개의 방</div>
+    <div className="min-h-screen p-5 max-w-6xl mx-auto" style={{ backgroundColor: 'var(--color-background)' }}>
+      <div className="text-center mb-8 card">
+        <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--color-text-title)' }}>🎲 게임 방 목록</h1>
+        <div className="text-lg font-medium" style={{ color: 'var(--color-text-light)' }}>총 {rooms.length}개의 방</div>
       </div>
 
-      <div className="rooms-grid">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-5xl mx-auto">
         {rooms.map((room) => (
-          <div key={room.id} className="room-card">
+          <div key={room.id} className="card hover-lift min-h-80 flex flex-col">
             {/* 방 헤더 */}
-            <div className="room-header">
-              <div className="room-title-section">
-                <h3 className="room-title">{room.title}</h3>
-                <span className="room-number">{room.roomNumber}</span>
+            <div className="card-header">
+              <div className="flex-1">
+                <h3 className="card-title">{room.title}</h3>
+                <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold tracking-wide"
+                      style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-secondary)' }}>
+                  {room.roomNumber}
+                </span>
               </div>
-              <div className="status-indicator">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <div 
-                  className="status-circle"
-                  style={{ backgroundColor: getStatusColor(room) }}
+                  className="w-4 h-4 rounded-full border-2 border-white shadow-md"
+                  style={{
+                    backgroundColor: room.currentMembers.length === 0 ? 'var(--color-gray-dark)' :
+                                   room.currentMembers.length === room.maxMembers ? 'var(--color-error)' : 'var(--color-success)'
+                  }}
                 ></div>
-                <span className="status-text">{getStatusText(room)}</span>
+                <span className="text-sm font-semibold" style={{ color: 'var(--color-text-title)' }}>{getStatusText(room)}</span>
               </div>
             </div>
 
             {/* 게임 목록 */}
-            <div className="game-list-section">
-              <h4>🎮 게임 목록</h4>
-              <div className="game-tags">
+            <div className="mb-5 flex-1">
+              <h4 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-text-title)' }}>🎮 게임 목록</h4>
+              <div className="flex flex-wrap gap-2">
                 {room.gameList.map((game, index) => (
-                  <span key={index} className="game-tag">{game}</span>
+                  <span key={index} className="tag-game">{game}</span>
                 ))}
               </div>
             </div>
 
             {/* 인원 정보 */}
-            <div className="members-section">
-              <div className="member-count">
+            <div className="mb-5 p-4 rounded-xl border-l-4" 
+                 style={{ 
+                   backgroundColor: 'var(--color-gray)', 
+                   borderLeftColor: 'var(--color-primary)' 
+                 }}>
+              <div className="font-semibold mb-2" style={{ color: 'var(--color-text-title)' }}>
                 👥 {room.currentMembers.length}/{room.maxMembers}명
               </div>
-              <div className="member-list">
+              <div className="flex flex-wrap gap-2">
                 {room.currentMembers.length > 0 ? (
                   room.currentMembers.map((member, index) => (
-                    <span key={index} className="member-name">{member}</span>
+                    <span key={index} className="tag-member">{member}</span>
                   ))
                 ) : (
-                  <span className="no-members">대기 중인 인원이 없습니다</span>
+                  <span className="italic text-sm" style={{ color: 'var(--color-text-light)' }}>대기 중인 인원이 없습니다</span>
                 )}
               </div>
             </div>
 
             {/* 입장 버튼 */}
-            <div className="room-footer">
+            <div className="mt-auto pt-4">
               <button 
-                className={`join-button ${room.status !== 'waiting' ? 'disabled' : ''}`}
+                className={room.status === 'full' ? 'btn-disabled w-full' : 'btn-success w-full'}
                 onClick={() => handleJoinRoom(room)}
-                disabled={room.status !== 'waiting'}
+                disabled={room.status === 'full'}
               >
-                {room.status === 'waiting' ? '🚪 입장하기' : 
-                 room.status === 'playing' ? '🎮 게임중' : '🚫 만원'}
+                {room.status === 'full' ? '🚫 가득참' : '🚪 입장하기'}
               </button>
             </div>
           </div>

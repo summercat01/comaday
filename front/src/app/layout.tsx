@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import '../components/App.css'
+import '../styles/globals.css'
 
 export const metadata: Metadata = {
   title: '코마데이 - 코인 전송 서비스',

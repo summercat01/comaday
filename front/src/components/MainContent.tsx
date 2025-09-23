@@ -8,7 +8,6 @@ import { rankingService } from "../api/services/rankingService";
 import { RankingUser } from "../types/ranking";
 import { coinService } from "../api/services/coinService";
 import { useUser } from "./providers";
-import "./App.css";
 
 // Components
 const MessageBox = () => {
@@ -22,12 +21,14 @@ const UserInfo = ({ rankings }: { rankings: RankingUser[] }) => {
   const myRanking = rankings.find((r) => r.id === currentUser.id);
   if (!myRanking) return null;
   return (
-    <div className="user-info-box">
-      <div className="user-info-content">
-        번호: {myRanking.id} <span className="separator">|</span>{" "}
-        {myRanking.username} <span className="separator">|</span> 코인:{" "}
-        {myRanking.totalCoins}
-      </div>
+    <div className="card mb-6">
+        <div className="flex items-center justify-center text-lg font-semibold" style={{ color: 'var(--color-text-title)' }}>
+          <span className="px-3">번호: {myRanking.id}</span>
+          <span style={{ color: 'var(--color-text-light)' }}>|</span>
+          <span className="px-3">{myRanking.username}</span>
+          <span style={{ color: 'var(--color-text-light)' }}>|</span>
+          <span className="px-3" style={{ color: 'var(--color-primary-dark)' }}>코인: {myRanking.totalCoins}</span>
+        </div>
     </div>
   );
 };
@@ -42,26 +43,36 @@ const RankingTable = () => {
   return (
     <>
       <UserInfo rankings={rankings} />
-      <div className="ranking-container">
-        <h2 className="ranking-title">랭킹</h2>
-        <table className="ranking-table">
-          <thead>
-            <tr>
-              <th>순위</th>
-              <th>이름</th>
-              <th>코인</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rankings.map((user) => (
-              <tr key={user.id}>
-                <td>{user.rank}</td>
-                <td>{user.username}</td>
-                <td>{user.totalCoins}</td>
+      <div className="card">
+        <h2 className="card-title mb-5 text-center">🏆 랭킹</h2>
+        <div className="overflow-hidden rounded-xl" style={{ border: '1px solid var(--color-border)' }}>
+          <table className="w-full">
+            <thead style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-secondary)' }}>
+              <tr>
+                <th className="px-6 py-4 text-center font-semibold">순위</th>
+                <th className="px-6 py-4 text-left font-semibold">이름</th>
+                <th className="px-6 py-4 text-center font-semibold">코인</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody style={{ borderColor: 'var(--color-border)' }} className="divide-y">
+              {rankings.map((user, index) => (
+                <tr 
+                  key={user.id} 
+                  className="transition-colors hover:bg-opacity-50"
+                  style={{ 
+                    backgroundColor: index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray)',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-success-bg)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray)'}
+                >
+                  <td className="px-6 py-4 text-center font-bold" style={{ color: 'var(--color-primary-dark)' }}>{user.rank}</td>
+                  <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-text-title)' }}>{user.username}</td>
+                  <td className="px-6 py-4 text-center font-semibold" style={{ color: 'var(--color-success)' }}>{user.totalCoins.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );
@@ -96,31 +107,47 @@ const Login = () => {
   };
 
   return (
-    <div className="login-modal">
-      <h2 className="login-title">로그인</h2>
-      <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
-        <div className="login-input-row">
-          <label htmlFor="username">아이디</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
-        <div className="login-input-row">
-          <label htmlFor="password">비밀번호</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-          />
-        </div>
-        <button type="submit">로그인</button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center p-5" 
+         style={{ background: 'linear-gradient(135deg, var(--color-primary-light), var(--color-background))' }}>
+      <div className="card w-full max-w-md animate-slide-up">
+        <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--color-text-title)' }}>🔐 로그인</h2>
+        <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+          <div className="space-y-2">
+            <label htmlFor="username" className="block text-sm font-semibold" style={{ color: 'var(--color-text-title)' }}>
+              아이디
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="input-field"
+              placeholder="아이디를 입력하세요"
+              autoComplete="off"
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="password" className="block text-sm font-semibold" style={{ color: 'var(--color-text-title)' }}>
+              비밀번호
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+              placeholder="비밀번호를 입력하세요"
+              autoComplete="new-password"
+            />
+          </div>
+          <button type="submit" className="btn-primary w-full text-lg">
+            로그인
+          </button>
+        </form>
+          <p className="text-center text-sm mt-6" style={{ color: 'var(--color-text-light)' }}>
+            계정이 없다면 자동으로 생성됩니다
+          </p>
+      </div>
     </div>
   );
 };
@@ -178,25 +205,78 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
-  // CoinTransfer component content (simplified for space)
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="coin-transfer-modal" onClick={(e) => e.stopPropagation()}>
-        <h2 className="coin-transfer-title">코인 전송</h2>
-        <form onSubmit={handleSubmit}>
-          {/* Form content would be here - keeping original structure */}
-          <div className="coin-transfer-button-group">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-5 z-50 animate-fade-in" 
+      onClick={onClose}
+    >
+      <div 
+        className="card w-full max-w-md animate-slide-up" 
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-2xl font-bold text-center text-coma-dark mb-6">💰 코인 전송</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* 받는 사람 선택 */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-coma-dark">받는 사람</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                placeholder="사용자 이름을 검색하세요"
+                className="input-field"
+              />
+              {showDropdown && filtered.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                  {filtered.map((user) => (
+                    <div
+                      key={user.id}
+                      className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
+                      onClick={() => {
+                        setSelectedUserId(user.id.toString());
+                        setKeyword(user.username);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      {user.username}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 코인 수량 */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-coma-dark">코인 수량</label>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="전송할 코인 수량"
+              className="input-field"
+              min="1"
+            />
+          </div>
+
+          {/* 버튼 그룹 */}
+          <div className="flex gap-3">
             <button
               type="submit"
-              className="coin-transfer-submit"
+              className={isSubmitting ? "btn-disabled flex-1" : "btn-success flex-1"}
               disabled={isSubmitting}
             >
-              전송
+              {isSubmitting ? "전송 중..." : "💸 전송"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="coin-transfer-cancel"
+              className="btn-danger flex-1"
             >
               취소
             </button>
@@ -217,23 +297,18 @@ const MainContent = () => {
     router.push('/rooms');
   };
 
+
   return (
-    <div className="App">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-background)' }}>
       <MessageBox />
       {currentUser && (
         <button
           onClick={logout}
-          style={{
-            position: "absolute",
-            top: 24,
-            right: 32,
-            zIndex: 1000,
-            padding: "8px 16px",
-            background: "#fff",
-            border: "1px solid #ddd",
-            borderRadius: "20px",
-            cursor: "pointer",
-            fontWeight: 600,
+          className="fixed top-6 right-8 z-50 px-4 py-2 rounded-full text-sm font-semibold hover:shadow-md transition-all duration-200 shadow-sm"
+          style={{ 
+            backgroundColor: 'var(--color-card-bg)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-title)'
           }}
         >
           로그아웃
@@ -242,39 +317,56 @@ const MainContent = () => {
       {!currentUser ? (
         <Login />
       ) : (
-        <>
-          <div className="logo-container">
-            <img src="/logo.png" alt="코딩 마스터 로고" className="app-logo" />
+        <div className="max-w-4xl mx-auto p-5 space-y-8">
+          {/* 로고 섹션 */}
+          <div className="text-center py-8">
+            <img 
+              src="/logo.png" 
+              alt="코딩 마스터 로고" 
+              className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg hover:shadow-xl transition-shadow" 
+            />
+            <h1 className="text-5xl font-bold mb-2 animate-bounce-gentle" style={{ color: 'var(--color-text-title)' }}>
+              코마데이
+            </h1>
+            <p className="text-lg" style={{ color: 'var(--color-text-light)' }}>보드게임 코인 관리 시스템</p>
           </div>
-          <h1 className="app-title">코마데이</h1>
-          <div className="user-section">
-            <UserInfo rankings={[]} />
-          </div>
+
+          {/* 랭킹 테이블 */}
           <RankingTable />
-          <div className="action-section">
+
+          {/* 액션 버튼들 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
             <button
-              className="room-btn"
+              className="btn-primary text-lg py-4 flex items-center justify-center gap-2 hover-lift"
               onClick={handleGoToRooms}
             >
               🏠 게임 방
             </button>
             <button
-              className="coin-transfer-btn"
+              className="btn-success text-lg py-4 flex items-center justify-center gap-2 hover-lift"
               onClick={() => setShowTransfer(true)}
             >
               💰 코인 전송
             </button>
           </div>
+
+          {/* 코인 전송 모달 */}
           {showTransfer && (
             <CoinTransfer onClose={() => setShowTransfer(false)} />
           )}
-        </>
-      )}
-      <footer className="footer">
-        <div className="footer-developer">
-          Developed by 고재우 나산하 김선우
         </div>
-        <div className="footer-copyright">©Coma</div>
+      )}
+      
+      {/* 푸터 */}
+      <footer className="bg-white border-t border-gray-200 mt-12">
+        <div className="max-w-4xl mx-auto p-6 text-center">
+          <div className="text-gray-600 text-sm mb-2">
+            Developed by 고재우 나산하 김선우
+          </div>
+          <div className="text-gray-500 text-xs">
+            ©Coma
+          </div>
+        </div>
       </footer>
     </div>
   );
