@@ -19,8 +19,14 @@ export class Room {
   @Column({ comment: '방 제목' })
   name: string;
 
-  @Column({ nullable: true, comment: '방 설명' })
+  @Column({ nullable: true, comment: '게임 이름' })
+  gameName: string;
+
+  @Column({ nullable: true, comment: '방 설명 (현재 표시되는 설명)' })
   description: string;
+
+  @Column({ nullable: true, comment: '원래 방 설명 (초기화용)' })
+  originalDescription: string;
 
   @Column({ comment: '방장 사용자 ID' })
   hostUserId: number;
@@ -31,13 +37,8 @@ export class Room {
   @Column({ default: 'ACTIVE', comment: '방 상태: ACTIVE(활성), CLOSED(종료)' })
   status: 'ACTIVE' | 'CLOSED';
 
-  // 포인트는 관리자가 행사 전에 일괄 지급함 - initialPoints 필드 제거
-
   @Column({ nullable: true, comment: '방 생성 시간' })
   startedAt: Date;
-
-  @Column({ nullable: true, comment: '방 종료 시간' })
-  endedAt: Date;
 
   @OneToMany(() => RoomMember, roomMember => roomMember.room, { cascade: true })
   members: RoomMember[];
@@ -55,9 +56,5 @@ export class Room {
 
   get isActive(): boolean {
     return this.status === 'ACTIVE';
-  }
-
-  get canJoin(): boolean {
-    return this.status === 'ACTIVE' && this.memberCount < this.maxMembers;
   }
 }

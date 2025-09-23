@@ -23,12 +23,6 @@ export class User {
   @Column({ default: false })
   isAdmin: boolean;
 
-  @Column({ default: false })
-  isGuest: boolean;
-
-  @Column({ nullable: true })
-  lastLoginAt: Date;
-
   @CreateDateColumn()
   createdAt: Date;
 

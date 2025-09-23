@@ -19,9 +19,6 @@ export class Ranking {
   @Column()
   totalCoins: number;
 
-  @Column()
-  rank: number;
-
   @CreateDateColumn()
   createdAt: Date;
 }

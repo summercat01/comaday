@@ -16,8 +16,7 @@ export class UsersService {
   async create(username: string): Promise<User> {
     const user = this.usersRepository.create({ 
       username,
-      coinCount: 0,
-      isGuest: true
+      coinCount: 0
     });
     const savedUser = await this.usersRepository.save(user);
     await this.rankingService.updateOrCreateRanking(savedUser.id);
@@ -29,9 +28,7 @@ export class UsersService {
     const user = this.usersRepository.create({ 
       username, 
       password: hashedPassword,
-      coinCount: 0,
-      isGuest: true,
-      lastLoginAt: new Date()
+      coinCount: 1000 // 초기 코인
     });
     const savedUser = await this.usersRepository.save(user);
     await this.rankingService.updateOrCreateRanking(savedUser.id);
@@ -82,7 +79,7 @@ export class UsersService {
     }
 
     // 마지막 로그인 시간 업데이트
-    user.lastLoginAt = new Date();
+    // lastLoginAt 필드 제거됨
     const savedUser = await this.usersRepository.save(user);
     await this.rankingService.updateOrCreateRanking(savedUser.id);
     return savedUser;

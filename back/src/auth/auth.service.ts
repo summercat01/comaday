@@ -1,7 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
+import { InvalidCredentialsException } from '../common/exceptions/custom.exceptions';
+import { ERROR_MESSAGES } from '../common/constants/error-messages';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +24,7 @@ export class AuthService {
   async login(username: string, password: string) {
     const user = await this.validateUser(username, password);
     if (!user) {
-      throw new UnauthorizedException('아이디 또는 비밀번호가 올바르지 않습니다.');
+      throw new InvalidCredentialsException(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
     const payload = { username: user.username, sub: user.id };

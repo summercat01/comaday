@@ -3,9 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  ManyToOne,
 } from "typeorm";
-import { User } from "../../users/entities/user.entity";
 
 @Entity("coin_transactions")
 export class CoinTransaction {
@@ -15,14 +13,8 @@ export class CoinTransaction {
   @Column({ nullable: true })
   senderId: number;
 
-  @ManyToOne(() => User)
-  sender: User;
-
   @Column({ nullable: true })
   receiverId: number;
-
-  @ManyToOne(() => User)
-  receiver: User;
 
   @Column()
   amount: number;
@@ -32,6 +24,12 @@ export class CoinTransaction {
 
   @Column()
   description: string;
+
+  @Column({ nullable: true, comment: '일괄거래 그룹 ID (UUID)' })
+  groupId: string;
+
+  @Column({ nullable: true, comment: '거래가 발생한 방 코드' })
+  roomCode: string;
 
   @CreateDateColumn()
   createdAt: Date;

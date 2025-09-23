@@ -23,15 +23,13 @@ export class RoomMember {
   userId: number;
 
   // 포인트는 User 엔티티에서 추적, 방별 포인트 관리 안함
-
-  @Column({ default: 'ACTIVE', comment: '멤버 상태' })
-  status: 'ACTIVE' | 'LEFT' | 'KICKED';
+  // 레코드 존재 = 방 참여중, 레코드 삭제 = 방 나감
 
   @Column({ default: () => 'CURRENT_TIMESTAMP', comment: '방 입장 시간' })
   joinedAt: Date;
 
-  @Column({ nullable: true, comment: '방 퇴장 시간' })
-  leftAt: Date;
+  @Column({ default: () => 'CURRENT_TIMESTAMP', comment: '마지막 하트비트 시간' })
+  lastHeartbeat: Date;
 
   @ManyToOne(() => Room, room => room.members, { onDelete: 'CASCADE' })
   room: Room;
@@ -45,10 +43,7 @@ export class RoomMember {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // 편의 메서드들
-  get isActive(): boolean {
-    return this.status === 'ACTIVE';
-  }
+  // 편의 메서드들 - 레코드 존재 자체가 활성 상태
 
   get isHost(): boolean {
     return this.room?.hostUserId === this.userId;

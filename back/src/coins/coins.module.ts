@@ -3,20 +3,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoinsController } from './coins.controller';
 import { CoinsService } from './coins.service';
 import { CoinTransaction } from './entities/coin-transaction.entity';
-import { TransactionLimit } from './entities/transaction-limit.entity';
 import { User } from '../users/entities/user.entity';
 import { RoomMember } from '../rooms/entities/room-member.entity';
 import { Room } from '../rooms/entities/room.entity';
 import { RankingModule } from '../ranking/ranking.module';
-import { TransactionLimitService } from './services/transaction-limit.service';
+// TransactionLimitService 제거 (방 제한만 사용)
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CoinTransaction, TransactionLimit, User, RoomMember, Room]),
+    TypeOrmModule.forFeature([CoinTransaction, User, RoomMember, Room]),
     RankingModule,
   ],
   controllers: [CoinsController],
-  providers: [CoinsService, TransactionLimitService],
-  exports: [CoinsService, TransactionLimitService],
+  providers: [CoinsService],
+  exports: [CoinsService],
 })
 export class CoinsModule {} 
