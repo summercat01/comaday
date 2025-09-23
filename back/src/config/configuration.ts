@@ -20,10 +20,6 @@ export default () => ({
   frontend: {
     url: process.env.FRONTEND_URL || 'http://localhost:3000',
   },
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-  },
   jwt: {
     secret: process.env.JWT_SECRET,
     expiration: process.env.JWT_EXPIRATION,

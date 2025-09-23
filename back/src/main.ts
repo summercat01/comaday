@@ -13,6 +13,9 @@ async function bootstrap() {
     credentials: true,
   });
   
+  // 글로벌 프리픽스 설정
+  app.setGlobalPrefix('api');
+  
   // 글로벌 예외 필터 등록
   app.useGlobalFilters(new GlobalExceptionFilter());
   

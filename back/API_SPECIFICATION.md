@@ -17,9 +17,10 @@
 
 ## 서버 정보
 
-- **Base URL**: `http://localhost:4000`
+- **Base URL**: `http://localhost:4000/api`
 - **Content-Type**: `application/json`
 - **인코딩**: UTF-8
+- **글로벌 프리픽스**: `/api` (모든 엔드포인트에 자동 적용)
 - **특징**: 오프라인 보드게임 코인 관리, 11개 사전 생성 방, 방 기반 거래 제한
 
 ---
@@ -54,7 +55,7 @@
 
 **Example Request:**
 ```bash
-curl -X POST http://localhost:4000/auth/login \
+curl -X POST http://localhost:4000/api/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "player1",
@@ -98,7 +99,7 @@ curl -X POST http://localhost:4000/auth/login \
 
 **Example Request:**
 ```bash
-curl -X POST http://localhost:4000/users/register \
+curl -X POST http://localhost:4000/api/api/users/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "newplayer",
