@@ -1,14 +1,6 @@
 import { API_ENDPOINTS } from '../config';
 import axiosInstance from '../axiosInstance';
-
-export interface User {
-  id: number;
-  username: string;
-  coinCount: number;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { User } from '../../types/user';
 
 export interface ApiError {
   success: false;
@@ -38,7 +30,7 @@ export const userService = {
    */
   async getAllUsers(): Promise<User[]> {
     try {
-      const response = await axiosInstance.get(API_ENDPOINTS.users);
+      const response = await axiosInstance.get<User[]>(API_ENDPOINTS.users);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -52,7 +44,7 @@ export const userService = {
    */
   async getUserById(id: number): Promise<User> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.users}/${id}`);
+      const response = await axiosInstance.get<User>(`${API_ENDPOINTS.users}/${id}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -66,7 +58,7 @@ export const userService = {
    */
   async updateUserCoins(id: number, coinCount: number): Promise<User> {
     try {
-      const response = await axiosInstance.put(`${API_ENDPOINTS.users}/${id}/coins`, {
+      const response = await axiosInstance.put<User>(`${API_ENDPOINTS.users}/${id}/coins`, {
         coinCount,
       });
       return response.data;
@@ -82,7 +74,7 @@ export const userService = {
    */
   async getReceivers(myId: number): Promise<ReceiverUser[]> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.users}/receivers/${myId}`);
+      const response = await axiosInstance.get<ReceiverUser[]>(`${API_ENDPOINTS.users}/receivers/${myId}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -96,7 +88,7 @@ export const userService = {
    */
   async guestLogin(username: string, password: string): Promise<User> {
     try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.users}/guest-login`, {
+      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.users}/guest-login`, {
         username,
         password,
       });

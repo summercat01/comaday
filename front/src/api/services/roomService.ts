@@ -1,41 +1,6 @@
 import { API_ENDPOINTS } from '../config';
 import axiosInstance from '../axiosInstance';
-
-export interface Room {
-  id: number;
-  roomCode: string;
-  name: string;
-  gameName?: string;
-  description: string;
-  originalDescription: string;
-  hostUserId: number;
-  maxMembers: number;
-  status: 'ACTIVE' | 'CLOSED';
-  startedAt: string;
-  members: RoomMember[];
-  createdAt: string;
-  updatedAt: string;
-  memberCount: number;
-  isActive: boolean;
-}
-
-export interface RoomMember {
-  id: number;
-  roomId: number;
-  userId: number;
-  joinedAt: string;
-  lastHeartbeat: string;
-  user: {
-    id: number;
-    username: string;
-    coinCount: number;
-  };
-  createdAt: string;
-  updatedAt: string;
-  isHost: boolean;
-  status?: string;
-  isActive?: boolean;
-}
+import { Room, RoomMember, CreateRoomDto, LobbyStatusResponse, RoomListResponse } from '../../types/room';
 
 export interface CreateRoomRequest {
   name: string;
@@ -71,19 +36,7 @@ export interface HeartbeatRequest {
   userId: number;
 }
 
-export interface LobbyRoom {
-  roomCode: string;
-  roomNumber: number;
-  name: string;
-  memberCount: number;
-  maxMembers: number;
-}
-
-export interface LobbyStatusResponse {
-  rooms: LobbyRoom[];
-  totalRooms: number;
-}
-
+// LobbyRoom과 LobbyStatusResponse는 types/room.ts에서 가져옴
 export interface RoomsResponse {
   rooms: Room[];
   total: number;
@@ -119,7 +72,7 @@ export const roomService = {
    */
   async createRoom(data: CreateRoomRequest): Promise<Room> {
     try {
-      const response = await axiosInstance.post(API_ENDPOINTS.rooms, data);
+      const response = await axiosInstance.post<Room>(API_ENDPOINTS.rooms, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -133,7 +86,7 @@ export const roomService = {
    */
   async getRooms(page: number = 1, limit: number = 10): Promise<RoomsResponse> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.rooms}?page=${page}&limit=${limit}`);
+      const response = await axiosInstance.get<RoomsResponse>(`${API_ENDPOINTS.rooms}?page=${page}&limit=${limit}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -147,7 +100,7 @@ export const roomService = {
    */
   async getLobbyStatus(): Promise<LobbyStatusResponse> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.rooms}/lobby-status`);
+      const response = await axiosInstance.get<LobbyStatusResponse>(`${API_ENDPOINTS.rooms}/lobby-status`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -161,7 +114,7 @@ export const roomService = {
    */
   async getRoomByCode(roomCode: string): Promise<Room> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.rooms}/${roomCode}`);
+      const response = await axiosInstance.get<Room>(`${API_ENDPOINTS.rooms}/${roomCode}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -176,7 +129,7 @@ export const roomService = {
   async joinRoom(roomCode: string, userId: number): Promise<RoomMember> {
     try {
       const data: JoinRoomRequest = { userId };
-      const response = await axiosInstance.post(`${API_ENDPOINTS.rooms}/${roomCode}/join`, data);
+      const response = await axiosInstance.post<RoomMember>(`${API_ENDPOINTS.rooms}/${roomCode}/join`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -191,7 +144,7 @@ export const roomService = {
   async leaveRoom(roomCode: string, userId: number): Promise<{ success: boolean; message: string }> {
     try {
       const data: LeaveRoomRequest = { userId };
-      const response = await axiosInstance.post(`${API_ENDPOINTS.rooms}/${roomCode}/leave`, data);
+      const response = await axiosInstance.post<{success: boolean; message: string}>(`${API_ENDPOINTS.rooms}/${roomCode}/leave`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -206,7 +159,7 @@ export const roomService = {
   async leaveRoomImmediately(roomCode: string, userId: number): Promise<{ success: boolean; message: string }> {
     try {
       const data: LeaveRoomRequest = { userId };
-      const response = await axiosInstance.post(`${API_ENDPOINTS.rooms}/${roomCode}/leave-immediately`, data);
+      const response = await axiosInstance.post<{success: boolean; message: string}>(`${API_ENDPOINTS.rooms}/${roomCode}/leave-immediately`, data);
       return response.data;
     } catch (error: any) {
       // 에러가 발생해도 관대하게 처리 (페이지 이탈시 사용)
@@ -221,7 +174,7 @@ export const roomService = {
    */
   async checkMembership(roomCode: string, userId: number): Promise<MembershipResponse> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.rooms}/${roomCode}/check-member/${userId}`);
+      const response = await axiosInstance.get<MembershipResponse>(`${API_ENDPOINTS.rooms}/${roomCode}/check-member/${userId}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -236,7 +189,7 @@ export const roomService = {
   async closeRoom(roomCode: string, userId: number): Promise<{ success: boolean; message: string }> {
     try {
       const data = { userId };
-      const response = await axiosInstance.post(`${API_ENDPOINTS.rooms}/${roomCode}/close`, data);
+      const response = await axiosInstance.post<{success: boolean; message: string}>(`${API_ENDPOINTS.rooms}/${roomCode}/close`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -251,7 +204,7 @@ export const roomService = {
   async updateRoomDescription(roomCode: string, userId: number, description: string): Promise<Room> {
     try {
       const data: UpdateRoomDescriptionRequest = { userId, description };
-      const response = await axiosInstance.put(`${API_ENDPOINTS.rooms}/${roomCode}/description`, data);
+      const response = await axiosInstance.put<Room>(`${API_ENDPOINTS.rooms}/${roomCode}/description`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -266,7 +219,7 @@ export const roomService = {
   async updateRoomName(roomCode: string, userId: number, name: string): Promise<Room> {
     try {
       const data: UpdateRoomNameRequest = { userId, name };
-      const response = await axiosInstance.put(`${API_ENDPOINTS.rooms}/${roomCode}/name`, data);
+      const response = await axiosInstance.put<Room>(`${API_ENDPOINTS.rooms}/${roomCode}/name`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -281,7 +234,7 @@ export const roomService = {
   async updateGameName(roomCode: string, userId: number, gameName: string): Promise<Room> {
     try {
       const data: UpdateGameNameRequest = { userId, gameName };
-      const response = await axiosInstance.put(`${API_ENDPOINTS.rooms}/${roomCode}/game-name`, data);
+      const response = await axiosInstance.put<Room>(`${API_ENDPOINTS.rooms}/${roomCode}/game-name`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -296,7 +249,7 @@ export const roomService = {
   async sendHeartbeat(roomCode: string, userId: number): Promise<{ success: boolean; message: string; lastHeartbeat: string }> {
     try {
       const data: HeartbeatRequest = { userId };
-      const response = await axiosInstance.post(`${API_ENDPOINTS.rooms}/${roomCode}/heartbeat`, data);
+      const response = await axiosInstance.post<{success: boolean; message: string; lastHeartbeat: string}>(`${API_ENDPOINTS.rooms}/${roomCode}/heartbeat`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;

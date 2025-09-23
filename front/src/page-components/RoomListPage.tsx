@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../components/providers';
 import { useRouter } from 'next/navigation';
-import { roomService, LobbyRoom } from '../api/services/roomService';
+import { roomService } from '../api/services/roomService';
+import { LobbyRoom } from '../types/room';
 
 interface RoomListPageProps {
   onJoinRoom: (roomCode: string) => void;

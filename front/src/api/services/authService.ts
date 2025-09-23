@@ -1,18 +1,10 @@
 import { API_ENDPOINTS } from '../config';
 import axiosInstance from '../axiosInstance';
+import { User } from '../../types/user';
 
 export interface LoginRequest {
   username: string;
   password: string;
-}
-
-export interface User {
-  id: number;
-  username: string;
-  coinCount: number;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface ApiError {
@@ -36,7 +28,7 @@ export const authService = {
    */
   async login(data: LoginRequest): Promise<User> {
     try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.auth}/login`, data);
+      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.auth}/login`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -50,7 +42,7 @@ export const authService = {
    */
   async register(data: LoginRequest): Promise<User> {
     try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.users}/register`, data);
+      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.users}/register`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -64,7 +56,7 @@ export const authService = {
    */
   async guestLogin(data: LoginRequest): Promise<User> {
     try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.users}/guest-login`, data);
+      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.users}/guest-login`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;

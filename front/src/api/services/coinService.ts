@@ -97,7 +97,7 @@ export const coinService = {
         ...(roomCode && { roomCode })
       };
       
-      const response = await axiosInstance.post(`${API_ENDPOINTS.coins}/transfer`, data);
+      const response = await axiosInstance.post<CoinTransaction>(`${API_ENDPOINTS.coins}/transfer`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -111,7 +111,7 @@ export const coinService = {
    */
   async bulkTransfer(data: BulkTransferRequest): Promise<CoinTransaction[]> {
     try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.coins}/bulk-transfer`, data);
+      const response = await axiosInstance.post<CoinTransaction[]>(`${API_ENDPOINTS.coins}/bulk-transfer`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -125,7 +125,7 @@ export const coinService = {
    */
   async earnCoins(data: CoinEarnRequest): Promise<CoinTransaction> {
     try {
-      const response = await axiosInstance.post(`${API_ENDPOINTS.coins}/earn`, data);
+      const response = await axiosInstance.post<CoinTransaction>(`${API_ENDPOINTS.coins}/earn`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -139,7 +139,7 @@ export const coinService = {
    */
   async getTransactionHistory(userId: number): Promise<CoinTransaction[]> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.coins}/history/${userId}`);
+      const response = await axiosInstance.get<CoinTransaction[]>(`${API_ENDPOINTS.coins}/history/${userId}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -153,7 +153,7 @@ export const coinService = {
    */
   async getAllTransactions(): Promise<CoinTransaction[]> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.coins}/transactions`);
+      const response = await axiosInstance.get<CoinTransaction[]>(`${API_ENDPOINTS.coins}/transactions`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -167,7 +167,7 @@ export const coinService = {
    */
   async checkRoomTransactionLimit(userId: number, roomCode: string): Promise<TransactionLimitResponse> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.coins}/room-limit/${userId}/${roomCode}`);
+      const response = await axiosInstance.get<TransactionLimitResponse>(`${API_ENDPOINTS.coins}/room-limit/${userId}/${roomCode}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -181,7 +181,7 @@ export const coinService = {
    */
   async getRoomTransactionStats(userId: number, roomCode: string): Promise<RoomTransactionStats> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.coins}/room-stats/${userId}/${roomCode}`);
+      const response = await axiosInstance.get<RoomTransactionStats>(`${API_ENDPOINTS.coins}/room-stats/${userId}/${roomCode}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -195,7 +195,7 @@ export const coinService = {
    */
   async getLobbyTransactionStats(userId: number): Promise<LobbyTransactionStats> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.coins}/lobby-transaction-stats/${userId}`);
+      const response = await axiosInstance.get<LobbyTransactionStats>(`${API_ENDPOINTS.coins}/lobby-transaction-stats/${userId}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;

@@ -1,13 +1,6 @@
 import { API_ENDPOINTS } from '../config';
 import axiosInstance from '../axiosInstance';
-
-export interface RankingUser {
-  id: number;
-  userId: number;
-  username: string;
-  totalCoins: number;
-  createdAt: string;
-}
+import { RankingUser } from '../../types/ranking';
 
 export interface ApiError {
   success: false;
@@ -30,7 +23,7 @@ export const rankingService = {
    */
   async getRankings(): Promise<RankingUser[]> {
     try {
-      const response = await axiosInstance.get(API_ENDPOINTS.ranking);
+      const response = await axiosInstance.get<RankingUser[]>(API_ENDPOINTS.ranking);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
@@ -44,7 +37,7 @@ export const rankingService = {
    */
   async getUserRanking(userId: number): Promise<RankingUser> {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.ranking}/user/${userId}`);
+      const response = await axiosInstance.get<RankingUser>(`${API_ENDPOINTS.ranking}/user/${userId}`);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
