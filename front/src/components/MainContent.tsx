@@ -3,15 +3,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "./providers";
-import { 
-  LoginForm, 
-  RankingTable, 
-  CoinTransferModal, 
-  AppHeader, 
-  AppFooter, 
-  LoadingSpinner,
-  Button 
-} from "./";
+import { LoginForm } from "./auth";
+import { RankingTable } from "./ranking";
+import { CoinTransferModal } from "./coin";
+import { AppHeader, AppFooter, LoadingSpinner } from "./layout";
+import { Button } from "./ui";
 
 // Main App Content
 interface MainContentProps {

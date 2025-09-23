@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '../components/providers';
 import { roomService } from '../api/services/roomService';
 import { LobbyRoom } from '../types/room';
-import { 
-  Card, 
-  CardTitle, 
-  LoadingSpinner, 
-  Button, 
-  RoomCard 
-} from '../components';
+import { Card, CardTitle, Button } from '../components/ui';
+import { LoadingSpinner } from '../components/layout';
+import { RoomCard } from '../components/room';
 
 interface RoomListPageProps {
   onJoinRoom: (roomCode: string) => void;
