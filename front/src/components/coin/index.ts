@@ -1,0 +1,1 @@
+export { CoinTransferModal } from './CoinTransferModal';

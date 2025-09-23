@@ -1,0 +1,1 @@
+export { RankingTable } from './RankingTable';
