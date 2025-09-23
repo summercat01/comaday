@@ -11,10 +11,13 @@ export * from './ranking';
 export * from './coin';
 
 // Room Components
-export * from './room';
+export * from './rooms';
 
 // Layout Components
 export * from './layout';
+
+// Admin Components
+export * from './admin';
 
 // Providers
 export * from './providers';

@@ -1,1 +1,0 @@
-export { RoomCard } from './RoomCard';

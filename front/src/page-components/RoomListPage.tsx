@@ -4,7 +4,7 @@ import { roomService } from '../api/services/roomService';
 import { LobbyRoom } from '../types/room';
 import { Card, CardTitle, Button } from '../components/ui';
 import { LoadingSpinner } from '../components/layout';
-import { RoomCard } from '../components/room';
+import { RoomCard } from '../components/rooms';
 
 interface RoomListPageProps {
   onJoinRoom: (roomCode: string) => void;

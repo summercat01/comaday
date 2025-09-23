@@ -1,15 +1,6 @@
-'use client'
-
 import React from 'react'
-import { MessageProvider, UserProvider } from '../../components/providers'
-import AdminPage from '../../page-components/AdminPage'
+import AdminPageClient from '../../components/admin/AdminPageClient'
 
 export default function AdminPageRoute() {
-  return (
-    <MessageProvider>
-      <UserProvider>
-        <AdminPage />
-      </UserProvider>
-    </MessageProvider>
-  )
+  return <AdminPageClient />
 }
