@@ -2,27 +2,26 @@ export interface Room {
   id: number;
   roomCode: string;
   name: string;
-  description?: string;
+  gameName?: string;
+  description: string;
+  originalDescription: string;
   hostUserId: number;
   maxMembers: number;
   status: 'ACTIVE' | 'CLOSED';
-  startedAt?: string;
-  endedAt?: string;
+  startedAt: string;
   members: RoomMember[];
   createdAt: string;
   updatedAt: string;
   memberCount: number;
   isActive: boolean;
-  canJoin: boolean;
 }
 
 export interface RoomMember {
   id: number;
   roomId: number;
   userId: number;
-  status: 'ACTIVE' | 'LEFT' | 'KICKED';
-  joinedAt?: string;
-  leftAt?: string;
+  joinedAt: string;
+  lastHeartbeat: string;
   user: {
     id: number;
     username: string;
@@ -30,18 +29,32 @@ export interface RoomMember {
   };
   createdAt: string;
   updatedAt: string;
-  isActive: boolean;
   isHost: boolean;
+  status?: string;
+  isActive?: boolean;
 }
 
 export interface CreateRoomDto {
   name: string;
-  description?: string;
-  maxMembers?: number;
+  description: string;
+  maxMembers: number;
   hostUserId: number;
+}
+
+export interface LobbyRoom {
+  roomCode: string;
+  roomNumber: number;
+  name: string;
+  memberCount: number;
+  maxMembers: number;
 }
 
 export interface RoomListResponse {
   rooms: Room[];
   total: number;
+}
+
+export interface LobbyStatusResponse {
+  rooms: LobbyRoom[];
+  totalRooms: number;
 }

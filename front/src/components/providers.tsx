@@ -16,6 +16,7 @@ interface MessageContextType {
 interface UserContextType {
   currentUser: User | null;
   users: User[];
+  isLoaded: boolean;
   login: (user: User) => void;
   logout: () => void;
   sendCoin: (
@@ -168,7 +169,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ currentUser, users, login, logout, sendCoin, setCurrentUser }}
+      value={{ currentUser, users, isLoaded, login, logout, sendCoin, setCurrentUser }}
     >
       {children}
     </UserContext.Provider>

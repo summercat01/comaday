@@ -1,20 +1,11 @@
 // src/pages/AdminPage.tsx
 import React, { useState, useEffect } from "react";
-import axiosInstance from "../api/axiosInstance";
-import { API_ENDPOINTS } from "../api/endpoints";
-// import { User } from "../types/user";
+import { userService } from "../api/services/userService";
+import { coinService } from "../api/services/coinService";
+import { User } from "../types/user";
 
-// 관리자 페이지에서 사용할 사용자 타입
-interface AdminUser {
-  id: number;
-  username: string;
-  coinCount: number;
-  isGuest: boolean;
-  lastLoginAt: string;
-  isAdmin: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+// 관리자 페이지에서 사용할 사용자 타입 (백엔드 API에 맞게)
+interface AdminUser extends User {}
 
 const AdminPage = () => {
   // 관리자 인증 상태
@@ -61,8 +52,8 @@ const AdminPage = () => {
         setLoading(true);
         setLoadError("");
         try {
-          const response = await axiosInstance.get<AdminUser[]>(API_ENDPOINTS.users);
-          setUsers(response.data);
+          const users = await userService.getAllUsers();
+          setUsers(users);
         } catch (error) {
           console.error('사용자 데이터 불러오기 오류:', error);
           setLoadError("사용자 데이터를 불러오는 중 오류가 발생했습니다.");
@@ -91,31 +82,40 @@ const AdminPage = () => {
     }
     
     try {
-      // action에 따라 코인 추가 또는 차감
-      const finalAmount = action === "추가" ? amount : -amount;
-      await axiosInstance.put(`${API_ENDPOINTS.users}/${userId}/coins`, {
-        amount: finalAmount
-      });
-      
-      // 사용자 목록과 랭킹 데이터 새로고침
-      const [usersResponse] = await Promise.all([
-        axiosInstance.get<AdminUser[]>(API_ENDPOINTS.users)
-      ]);
-      
-      setUsers(usersResponse.data);
-      // 랭킹 데이터도 상태로 관리하고 있다면 여기서 업데이트
-      
+      // 현재 사용자 정보 가져오기
+      const currentUser = users.find(u => u.id === userId);
+      if (!currentUser) {
+        alert('사용자를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 새로운 코인 수량 계산
+      const newCoinCount = action === "추가" 
+        ? currentUser.coinCount + amount 
+        : currentUser.coinCount - amount;
+
+      if (newCoinCount < 0) {
+        alert('코인이 부족하여 차감할 수 없습니다.');
+        return;
+      }
+
+      // 코인 수량 업데이트
+      await userService.updateUserCoins(userId, newCoinCount);
+
+      // 사용자 목록 새로고침
+      const updatedUsers = await userService.getAllUsers();
+      setUsers(updatedUsers);
+
       // 입력값 초기화
       setInputValues(prev => ({
         ...prev,
         [userId]: ""
       }));
-      
+
       alert(`사용자의 코인이 ${action === "추가" ? "추가" : "차감"}되었습니다.`);
     } catch (error: any) {
       console.error('코인 업데이트 오류:', error);
-      const errorMessage = error.response?.data?.message || "코인 업데이트 중 오류가 발생했습니다.";
-      alert(errorMessage);
+      alert(error.message || "코인 업데이트 중 오류가 발생했습니다.");
     }
   };
 
@@ -256,20 +256,20 @@ const AdminPage = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-2">
-                          <p className="text-sm">
-                            <span className="text-gray-600">게스트:</span>
-                            <span className={`ml-1 px-2 py-1 rounded-full text-xs font-semibold ${user.isGuest ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
-                              {user.isGuest ? "예" : "아니오"}
-                            </span>
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            <span className="font-medium">마지막 로그인:</span><br />
-                            {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "없음"}
-                          </p>
-                        </div>
-                      </td>
+                             <td className="px-6 py-4">
+                               <div className="space-y-2">
+                                 <p className="text-sm">
+                                   <span className="text-gray-600">계정 타입:</span>
+                                   <span className="ml-1 px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                     일반 사용자
+                                   </span>
+                                 </p>
+                                 <p className="text-xs text-gray-600">
+                                   <span className="font-medium">수정일:</span><br />
+                                   {new Date(user.updatedAt).toLocaleString()}
+                                 </p>
+                               </div>
+                             </td>
                     </tr>
                   ))}
                 </tbody>

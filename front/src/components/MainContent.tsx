@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authService } from "../api/services/authService";
 import { userService } from "../api/services/userService";
 import { User } from "../types/user";
 import { rankingService } from "../api/services/rankingService";
@@ -37,7 +38,15 @@ const RankingTable = () => {
   const [rankings, setRankings] = useState<RankingUser[]>([]);
 
   useEffect(() => {
-    rankingService.getRankings().then(setRankings);
+    const fetchRankings = async () => {
+      try {
+        const data = await rankingService.getRankingsWithRank();
+        setRankings(data);
+      } catch (error) {
+        console.error('랭킹 조회 실패:', error);
+      }
+    };
+    fetchRankings();
   }, []);
 
   return (
@@ -95,7 +104,8 @@ const Login = () => {
     }
 
     try {
-      const user = await userService.guestLogin(username, password);
+      // 백엔드 API에 맞게 authService.login 사용 (자동 계정 생성)
+      const user = await authService.login({ username, password });
       login(user);
     } catch (error) {
       if (error instanceof Error) {
@@ -288,15 +298,32 @@ const CoinTransfer = ({ onClose }: { onClose: () => void }) => {
 };
 
 // Main App Content
-const MainContent = () => {
-  const { currentUser, logout } = useUser();
+interface MainContentProps {
+  onGoToRooms?: () => void;
+}
+
+const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
+  const { currentUser, logout, isLoaded } = useUser();
   const [showTransfer, setShowTransfer] = useState(false);
-  const router = useRouter();
 
   const handleGoToRooms = () => {
-    router.push('/rooms');
+    if (onGoToRooms) {
+      onGoToRooms();
+    }
   };
 
+
+  // 로딩 중일 때는 빈 화면 또는 로딩 표시
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="loading-spinner mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-background)' }}>
