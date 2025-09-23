@@ -17,13 +17,13 @@ const nextConfig = {
       // API 라우트 프록시 (백엔드 서버로)
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3001/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/:path*`,
       },
     ];
   },
   // 환경 변수 설정
   env: {
-    API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:3001',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
   },
   // TypeScript 설정
   typescript: {
