@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { roomService } from '../api/services/roomService';
 import { Room, CreateRoomDto } from '../types/room';
-import { useUser } from '../App';
+import { useUser } from '../components/providers';
 import './RoomListPage.css';
 
 interface RoomListPageProps {

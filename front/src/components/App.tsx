@@ -1,8 +1,8 @@
 'use client'
 
 import React from "react";
-import { MessageProvider, UserProvider } from "./components/providers";
-import MainContent from "./components/MainContent";
+import { MessageProvider, UserProvider } from "./providers";
+import MainContent from "./MainContent";
 
 const App = () => {
   return (
