@@ -52,34 +52,9 @@ export default function RootLayout({
         }} />
         
         <link rel="icon" href="/favicon.ico" />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-touch-icon.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
-        <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body>
-        <noscript>
-          <link
-            href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
-            rel="stylesheet"
-          />
-          자바스크립트를 활성화해주세요.
-        </noscript>
-        <div id="root">{children}</div>
+        {children}
       </body>
     </html>
   )

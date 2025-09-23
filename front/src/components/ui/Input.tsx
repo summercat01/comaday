@@ -22,6 +22,7 @@ export const Input: React.FC<InputProps> = ({
     className,
   ].filter(Boolean).join(' ');
 
+
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
