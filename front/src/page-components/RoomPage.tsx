@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { roomService } from '../api/services/roomService';
 import { coinService } from '../api/services/coinService';
 import { Room } from '../types/room';
@@ -15,6 +16,7 @@ interface RoomPageProps {
 
 const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   const { currentUser, isLoaded } = useUser();
+  const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   }, [roomCode, isLoaded, currentUser]);
 
-  // 페이지 이탈 시 방에서 즉시 나가기
+  // 페이지 이탈 시 방에서 나가기 (확인 포함)
   useEffect(() => {
     if (!currentUser || !room) return;
 
@@ -43,50 +45,122 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     if (!isMember) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // beforeunload에서는 비동기 작업이 제한되므로 sendBeacon 사용
+      // 사용자에게 확인 메시지 표시
+      event.preventDefault();
+      event.returnValue = '정말 방에서 나가시겠습니까?';
+      
+      // 브라우저가 사용자 확인을 받은 후 실제로 나갈 때를 위한 처리
+      // (실제 이탈은 다른 이벤트에서 처리)
+      return '정말 방에서 나가시겠습니까?';
+    };
+
+    const handlePageHide = () => {
+      // 실제 페이지가 숨겨질 때 (사용자가 확인 후 나갈 때)
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/rooms/${roomCode}/leave-immediately`;
       const data = JSON.stringify({ userId: currentUser.id });
       
       try {
-        // navigator.sendBeacon은 페이지 이탈 시에도 확실히 전송됨
         if (navigator.sendBeacon) {
           navigator.sendBeacon(apiUrl, new Blob([data], { type: 'application/json' }));
         } else {
-          // sendBeacon을 지원하지 않는 브라우저를 위한 fallback
           fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: data,
-            keepalive: true // 페이지 이탈 후에도 요청 유지
-          }).catch(() => {
-            // 에러 무시 (API 특성상 관대)
-          });
+            keepalive: true
+          }).catch(() => {});
         }
       } catch (error) {
         console.log('페이지 이탈 시 방 나가기:', error);
       }
     };
 
-    const handleVisibilityChange = async () => {
-      // 탭이 백그라운드로 갈 때 (완전 이탈은 아니지만 참고용)
-      if (document.visibilityState === 'hidden') {
-        try {
-          await roomService.leaveRoomImmediately(roomCode, currentUser.id);
-        } catch (error) {
-          console.log('탭 백그라운드 시 방 나가기:', error);
-        }
-      }
-    };
-
-    // 브라우저 창/탭 닫기, 새로고침, 다른 페이지로 이동
+    // 브라우저 창/탭 닫기, 새로고침, 다른 페이지로 이동 시 확인
     window.addEventListener('beforeunload', handleBeforeUnload);
     
-    // 탭 백그라운드 전환 (선택적)
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // 실제 페이지 이탈 시 API 호출
+    window.addEventListener('pagehide', handlePageHide);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [currentUser, room, roomCode]);
+
+  // Next.js 라우터 변경 감지 (뒤로가기, 앞으로가기 등)
+  useEffect(() => {
+    if (!currentUser || !room) return;
+
+    const activeMembers = room.members || [];
+    const currentMember = activeMembers.find(m => m.userId === currentUser.id);
+    const isMember = !!currentMember;
+
+    if (!isMember) return;
+
+    const handleRouteChange = () => {
+      // 라우터 변경 시 (뒤로가기, 앞으로가기 등) 확인 메시지
+      const confirmLeave = confirm('정말 방에서 나가시겠습니까?');
+      
+      if (confirmLeave) {
+        // 사용자가 확인했을 때만 방에서 나가기
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/rooms/${roomCode}/leave-immediately`;
+        const data = JSON.stringify({ userId: currentUser.id });
+        
+        try {
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(apiUrl, new Blob([data], { type: 'application/json' }));
+          } else {
+            fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: data,
+              keepalive: true
+            }).catch(() => {});
+          }
+        } catch (error) {
+          console.log('라우터 변경 시 방 나가기:', error);
+        }
+        
+        return true; // 라우터 변경 허용
+      } else {
+        // 사용자가 취소했을 때 라우터 변경 방지
+        // Next.js에서는 이 방법이 제한적이므로 beforeunload가 더 효과적
+        return false;
+      }
+    };
+
+    // popstate 이벤트로 브라우저 뒤로가기/앞으로가기 감지
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      const confirmLeave = confirm('정말 방에서 나가시겠습니까?');
+      
+      if (confirmLeave) {
+        // 방에서 나가기 API 호출
+        roomService.leaveRoomImmediately(roomCode, currentUser.id)
+          .then(() => {
+            console.log('뒤로가기 시 방 나가기 성공');
+            // 실제 라우터 변경 수행
+            window.history.back();
+          })
+          .catch((error) => {
+            console.log('뒤로가기 시 방 나가기 실패:', error);
+            // 에러가 발생해도 뒤로가기는 허용
+            window.history.back();
+          });
+      } else {
+        // 취소시 히스토리를 다시 앞으로 이동하여 현재 페이지 유지
+        window.history.pushState(null, '', window.location.pathname);
+      }
+    };
+
+    // 히스토리 스택에 현재 상태 추가 (뒤로가기 감지용)
+    window.history.pushState(null, '', window.location.pathname);
+    
+    // popstate 이벤트 리스너 추가
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
     };
   }, [currentUser, room, roomCode]);
 
