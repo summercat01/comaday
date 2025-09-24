@@ -29,8 +29,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   useEffect(() => {
     if (isLoaded && currentUser) {
       loadRoomData();
-      const interval = setInterval(loadRoomData, 3000);
-      return () => clearInterval(interval);
     }
   }, [roomCode, isLoaded, currentUser]);
 
@@ -101,13 +99,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   };
 
-  // 참가자 위치 계산 (원형 배치)
-  const getPlayerPosition = (index: number, total: number) => {
-    const angle = (index * 2 * Math.PI) / total - Math.PI / 2; // -90도부터 시작
-    const radius = 120; // 반지름
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-    return { x, y };
+  // 수동 새로고침 함수
+  const handleRefresh = async () => {
+    await loadRoomData();
+    alert('방 정보가 새로고침되었습니다.');
   };
 
   if (!isLoaded || loading) {
@@ -202,6 +197,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button variant="success" size="sm" onClick={handleRefresh}>
+              🔄
+            </Button>
             <Button variant="primary" size="sm" onClick={() => setIsEditingName(true)}>
               편집
             </Button>
@@ -211,10 +209,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
           </div>
         </div>
 
-        {/* 중앙 게임 영역 */}
-        <div className="relative mb-8 bg-white rounded-2xl p-8 shadow-lg min-h-[400px] flex flex-col">
-          {/* 게임명 (중앙 상단) */}
-          <div className="text-center mb-8">
+        {/* 게임 정보 */}
+        <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
+          <div className="text-center">
             {isEditingGame ? (
               <div className="flex items-center justify-center gap-2">
                 <Input
@@ -232,113 +229,116 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
               </div>
             ) : (
               <div 
-                className="inline-block px-6 py-3 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-gray-400 transition-colors"
+                className="inline-block px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-gray-400 transition-colors"
                 onClick={() => setIsEditingGame(true)}
               >
-                <h2 className="text-xl font-bold" style={{ color: 'var(--color-text-title)' }}>
-                  {room.gameName || '게임명을 입력하세요'}
+                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-title)' }}>
+                  🎮 {room.gameName || '게임명을 입력하세요'}
                 </h2>
               </div>
             )}
           </div>
+        </div>
 
-          {/* 참가자 원형 배치 */}
-          <div className="flex-1 relative flex items-center justify-center">
-            <div className="relative w-64 h-64">
-              {/* 중앙 현재 인원 표시 */}
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                <div className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
-                  {activeMembers.length}
-                </div>
-                <div className="text-sm" style={{ color: 'var(--color-text-light)' }}>
-                  / {room.maxMembers}
-                </div>
+        {/* 인원 현황 */}
+        <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-title)' }}>
+              👥 참가자
+            </h3>
+            <div className="text-sm font-semibold" style={{ color: 'var(--color-primary)' }}>
+              {activeMembers.length} / {room.maxMembers}
+            </div>
+          </div>
+
+          {/* 참가자 리스트 */}
+          <div className="space-y-3">
+            {activeMembers.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">😴</div>
+                <p className="text-gray-500">아직 참가자가 없습니다</p>
               </div>
-
-              {/* 참가자들 원형 배치 */}
-              {activeMembers.map((member, index) => {
-                const position = getPlayerPosition(index, Math.max(activeMembers.length, 3));
+            ) : (
+              activeMembers.map((member) => {
                 const isCurrentUser = member.userId === currentUser.id;
                 
                 return (
                   <div
                     key={member.id}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: `calc(50% + ${position.x}px)`,
-                      top: `calc(50% + ${position.y}px)`
-                    }}
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                      isCurrentUser
+                        ? 'border-green-400 bg-green-50'
+                        : 'border-gray-200 bg-gray-50'
+                    }`}
                   >
-                    <div className="text-center">
-                      {/* 아바타 */}
-                      <div 
-                        className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg mb-2 ${
-                          isCurrentUser ? 'ring-4 ring-green-400' : ''
-                        }`}
-                        style={{ 
-                          backgroundColor: isCurrentUser ? 'var(--color-primary)' : 'var(--color-gray-dark)'
-                        }}
-                      >
-                        {member.user.username.charAt(0).toUpperCase()}
+                    {/* 아바타 */}
+                    <div 
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                      style={{ 
+                        backgroundColor: isCurrentUser ? 'var(--color-primary)' : 'var(--color-gray-dark)'
+                      }}
+                    >
+                      {member.user.username.charAt(0).toUpperCase()}
+                    </div>
+                    
+                    {/* 사용자 정보 */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold" style={{ color: 'var(--color-text-title)' }}>
+                          {member.user.username}
+                        </span>
+                        {isCurrentUser && (
+                          <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
+                            나
+                          </span>
+                        )}
                       </div>
-                      
-                      {/* 사용자명 */}
-                      <div className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text-title)' }}>
-                        {member.user.username}
-                        {isCurrentUser && <span className="text-xs text-green-600 ml-1">✓</span>}
-                      </div>
-                      
-                      {/* 코인 수 */}
-                      <div className="text-xs" style={{ color: 'var(--color-text-light)' }}>
-                        {member.user.coinCount.toLocaleString()}
+                      <div className="text-sm" style={{ color: 'var(--color-text-light)' }}>
+                        💰 {member.user.coinCount.toLocaleString()} 코인
                       </div>
                     </div>
-                  </div>
-                );
-              })}
 
-              {/* 빈 자리 표시 (물음표) */}
-              {Array.from({ length: room.maxMembers - activeMembers.length }).map((_, index) => {
-                const position = getPlayerPosition(activeMembers.length + index, Math.max(room.maxMembers, 3));
-                
-                return (
-                  <div
-                    key={`empty-${index}`}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: `calc(50% + ${position.x}px)`,
-                      top: `calc(50% + ${position.y}px)`
-                    }}
-                  >
-                    <div className="text-center">
-                      <div 
-                        className="w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center text-2xl"
-                        style={{ 
-                          borderColor: 'var(--color-gray)', 
-                          color: 'var(--color-gray-dark)' 
+                    {/* 코인 전송 버튼 (다른 사용자에게만) */}
+                    {!isCurrentUser && isMember && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedReceiver(member.userId);
+                          setShowTransfer(true);
                         }}
                       >
-                        ?
-                      </div>
-                    </div>
+                        전송
+                      </Button>
+                    )}
                   </div>
                 );
-              })}
-            </div>
+              })
+            )}
+
+            {/* 빈 자리 표시 */}
+            {Array.from({ length: room.maxMembers - activeMembers.length }).map((_, index) => (
+              <div
+                key={`empty-${index}`}
+                className="flex items-center gap-3 p-3 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50"
+              >
+                <div className="w-12 h-12 rounded-full border-2 border-dashed border-gray-400 flex items-center justify-center text-gray-400">
+                  ?
+                </div>
+                <div className="flex-1 text-gray-400">
+                  빈 자리
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 하단 버튼 */}
-        {isMember && (
-          <div className="text-center">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => setShowTransfer(true)}
-              className="w-full max-w-xs"
-            >
-              💰 코인 전송
-            </Button>
+        {/* 방 정보 */}
+        {!isMember && (
+          <div className="text-center bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <p className="text-yellow-800">
+              🔒 방에 입장하지 않았습니다. 다른 사용자의 정보만 볼 수 있습니다.
+            </p>
           </div>
         )}
 
@@ -351,26 +351,34 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
               </CardTitle>
               
               <div className="space-y-4">
+                {/* 받는 사람 정보 표시 */}
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                     받는 사람
                   </label>
-                  <select
-                    value={selectedReceiver || ''}
-                    onChange={(e) => setSelectedReceiver(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg"
-                    style={{ borderColor: 'var(--color-border)' }}
-                  >
-                    <option value="">선택하세요</option>
-                    {activeMembers
-                      .filter(m => m.userId !== currentUser.id)
-                      .map((member) => (
-                        <option key={member.id} value={member.userId}>
-                          {member.user.username} ({member.user.coinCount.toLocaleString()} 코인)
-                        </option>
-                      ))
-                    }
-                  </select>
+                  {selectedReceiver && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border">
+                      {(() => {
+                        const receiver = activeMembers.find(m => m.userId === selectedReceiver);
+                        return receiver ? (
+                          <>
+                            <div 
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                              style={{ backgroundColor: 'var(--color-gray-dark)' }}
+                            >
+                              {receiver.user.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-semibold">{receiver.user.username}</div>
+                              <div className="text-sm text-gray-600">💰 {receiver.user.coinCount.toLocaleString()} 코인</div>
+                            </div>
+                          </>
+                        ) : (
+                          <div>사용자를 찾을 수 없습니다</div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
                 
                 <Input
