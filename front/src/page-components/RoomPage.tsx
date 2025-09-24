@@ -444,20 +444,18 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                 </div>
               ) : (
                 <h1 
-                  className="text-lg font-bold cursor-pointer"
+                  className="text-lg font-bold cursor-pointer flex items-center gap-2 hover:opacity-80 transition-opacity"
                   style={{ color: 'var(--color-text-title)' }}
                   onClick={() => setIsEditingName(true)}
                 >
                   {room.name}
+                  <span className="text-sm opacity-60">✏️</span>
                 </h1>
               )}
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="primary" size="sm" onClick={() => setIsEditingName(true)}>
-              편집
-            </Button>
             <Button variant="danger" size="sm" onClick={handleLeaveRoom}>
               퇴장
             </Button>
@@ -483,14 +481,15 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                 </Button>
               </div>
             ) : (
-              <div 
-                className="inline-block px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-gray-400 transition-colors"
-                onClick={() => setIsEditingGame(true)}
-              >
-                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-title)' }}>
-                  🎮 {room.gameName || '게임명을 입력하세요'}
-                </h2>
-              </div>
+                <div 
+                  className="inline-block px-4 py-2 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-gray-400 transition-colors"
+                  onClick={() => setIsEditingGame(true)}
+                >
+                  <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'var(--color-text-title)' }}>
+                    🎮 {room.gameName || '게임명을 입력하세요'}
+                    <span className="text-sm opacity-60">✏️</span>
+                  </h2>
+                </div>
             )}
           </div>
         </div>
