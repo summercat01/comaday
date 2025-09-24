@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/AdminPage.tsx
 import React, { useState, useEffect } from "react";
 import { userService } from "../api/services/userService";

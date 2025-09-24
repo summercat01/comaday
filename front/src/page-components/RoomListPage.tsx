@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../components/providers';
 import { roomService } from '../api/services/roomService';
