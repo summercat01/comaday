@@ -45,7 +45,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
                 color: 'var(--color-secondary)' 
               }}
             >
-              방 #{room.roomNumber}
+              No.{room.roomNumber}
             </span>
           </div>
           <CardTitle level={3} className="text-sm sm:text-lg truncate">
@@ -99,7 +99,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
           onClick={() => onJoinRoom(room)}
           disabled={room.memberCount >= maxMembers}
         >
-          {room.memberCount >= maxMembers ? '🚫 가득참' : '🚪 입장'}
+          {room.memberCount >= maxMembers ? '🚫 가득참' : '입장'}
         </Button>
       </div>
     </Card>

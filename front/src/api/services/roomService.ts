@@ -129,10 +129,18 @@ export const roomService = {
   async joinRoom(roomCode: string, userId: number): Promise<RoomMember> {
     try {
       const data: JoinRoomRequest = { userId };
+      console.log('🚀 방 입장 API 요청:', { 
+        url: `${API_ENDPOINTS.rooms}/${roomCode}/join`, 
+        data,
+        userId,
+        type: typeof userId 
+      });
+      
       const response = await axiosInstance.post<RoomMember>(`${API_ENDPOINTS.rooms}/${roomCode}/join`, data);
       return response.data;
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
+      console.error('❌ 방 입장 API 에러:', { apiError, originalError: error });
       throw new Error(apiError?.message || '방 입장에 실패했습니다.');
     }
   },
