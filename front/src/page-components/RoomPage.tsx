@@ -15,7 +15,7 @@ interface RoomPageProps {
 }
 
 const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
-  const { currentUser, isLoaded } = useUser();
+  const { currentUser, isLoaded, setCurrentUser } = useUser();
   const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
@@ -278,6 +278,20 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       const updatedRoom = await roomService.getRoomByCode(roomCode);
       setRoom(updatedRoom);
       
+      // currentUser 코인 정보도 업데이트
+      const updatedMember = updatedRoom.members?.find(m => m.userId === currentUser.id);
+      if (updatedMember && updatedMember.user) {
+        const updatedUser = {
+          ...currentUser,
+          coinCount: updatedMember.user.coinCount
+        };
+        setCurrentUser(updatedUser);
+        // localStorage에도 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        }
+      }
+      
       alert('코인 전송이 완료되었습니다!');
       console.log('코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
     } catch (error: any) {
@@ -319,6 +333,20 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       // 코인 전송 후 방 데이터 즉시 새로고침
       const updatedRoom = await roomService.getRoomByCode(roomCode);
       setRoom(updatedRoom);
+      
+      // currentUser 코인 정보도 업데이트
+      const updatedMember = updatedRoom.members?.find(m => m.userId === currentUser.id);
+      if (updatedMember && updatedMember.user) {
+        const updatedUser = {
+          ...currentUser,
+          coinCount: updatedMember.user.coinCount
+        };
+        setCurrentUser(updatedUser);
+        // localStorage에도 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        }
+      }
       
       alert(`${validTransfers.length}명에게 총 ${totalAmount.toLocaleString()} 코인을 전송했습니다!`);
       console.log('일괄 코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
