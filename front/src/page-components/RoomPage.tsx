@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { roomService } from '../api/services/roomService';
 import { coinService } from '../api/services/coinService';
+import { userService } from '../api/services/userService';
 import { Room } from '../types/room';
 import { useUser } from '../components/providers';
 import { Card, CardTitle, Button, Input } from '../components/ui';
@@ -31,10 +32,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   const [newGameName, setNewGameName] = useState('');
 
   useEffect(() => {
-    if (isLoaded && currentUser) {
+    if (currentUser) {
     loadRoomData();
     }
-  }, [roomCode, isLoaded, currentUser]);
+  }, [roomCode, currentUser]);
 
   // 새로고침 문제로 인해 자동 페이지 이탈 감지 비활성화
   // 오직 명시적인 버튼 클릭과 뒤로가기만 처리
@@ -131,11 +132,16 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       try {
         const updatedRoom = await roomService.getRoomByCode(roomCode);
         
+        // 현재 사용자의 코인 정보 확인
+        const currentMemberData = updatedRoom.members?.find(m => m.userId === currentUser.id);
+        const currentUserCoinCount = currentMemberData?.user?.coinCount || 0;
+        
         // 현재 room 상태와 비교하여 변경사항이 있을 때만 업데이트
         const hasChanges = 
           updatedRoom.name !== room.name ||
           updatedRoom.gameName !== room.gameName ||
           updatedRoom.members?.length !== room.members?.length ||
+          currentUserCoinCount !== currentUser.coinCount ||
           JSON.stringify(updatedRoom.members?.map(m => m.userId).sort()) !== 
           JSON.stringify(room.members?.map(m => m.userId).sort());
 
@@ -144,6 +150,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
           setRoom(updatedRoom);
           setNewRoomName(updatedRoom.name);
           setNewGameName(updatedRoom.gameName || '');
+          
+          // 백엔드에서 최신 사용자 코인 정보 업데이트
+          await updateCurrentUserCoinInfo();
         }
       } catch (error) {
         console.error('방 데이터 폴링 실패:', error);
@@ -156,6 +165,29 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     };
   }, [currentUser, room, roomCode]);
 
+  // 사용자 코인 정보를 백엔드에서 최신으로 업데이트
+  const updateCurrentUserCoinInfo = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const latestUserInfo = await userService.getUserById(currentUser.id);
+      if (latestUserInfo.coinCount !== currentUser.coinCount) {
+        const updatedUser = {
+          ...currentUser,
+          coinCount: latestUserInfo.coinCount
+        };
+        setCurrentUser(updatedUser);
+        // localStorage에도 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        }
+        console.log('백엔드에서 최신 사용자 코인 정보 업데이트:', latestUserInfo.coinCount);
+      }
+    } catch (error) {
+      console.error('사용자 코인 정보 업데이트 실패:', error);
+    }
+  };
+
   const loadRoomData = async () => {
     if (!currentUser) return;
     
@@ -166,6 +198,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       setRoom(roomData);
       setNewRoomName(roomData.name);
       setNewGameName(roomData.gameName || '');
+      
+      // 백엔드에서 최신 사용자 코인 정보 업데이트
+      await updateCurrentUserCoinInfo();
     } catch (err: any) {
       console.error('방 정보 불러오기 실패:', err);
       setError(err.message || '방 정보를 불러오는데 실패했습니다.');
@@ -224,23 +259,12 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       setTransferAmount(0);
       setSelectedReceiver(null);
       
-      // 코인 전송 후 방 데이터 즉시 새로고침 (코인 수량 업데이트)
+      // 코인 전송 후 방 데이터 및 사용자 정보 즉시 업데이트
       const updatedRoom = await roomService.getRoomByCode(roomCode);
       setRoom(updatedRoom);
       
-      // currentUser 코인 정보도 업데이트
-      const updatedMember = updatedRoom.members?.find(m => m.userId === currentUser.id);
-      if (updatedMember && updatedMember.user) {
-        const updatedUser = {
-          ...currentUser,
-          coinCount: updatedMember.user.coinCount
-        };
-        setCurrentUser(updatedUser);
-        // localStorage에도 저장
-        if (typeof window !== 'undefined') {
-          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-        }
-      }
+      // 백엔드에서 최신 사용자 코인 정보 업데이트
+      await updateCurrentUserCoinInfo();
       
       alert('코인 전송이 완료되었습니다!');
       console.log('코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
@@ -280,23 +304,12 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       setShowBulkTransfer(false);
       setBulkTransferAmounts({});
       
-      // 코인 전송 후 방 데이터 즉시 새로고침
+      // 코인 전송 후 방 데이터 및 사용자 정보 즉시 업데이트
       const updatedRoom = await roomService.getRoomByCode(roomCode);
       setRoom(updatedRoom);
       
-      // currentUser 코인 정보도 업데이트
-      const updatedMember = updatedRoom.members?.find(m => m.userId === currentUser.id);
-      if (updatedMember && updatedMember.user) {
-        const updatedUser = {
-          ...currentUser,
-          coinCount: updatedMember.user.coinCount
-        };
-        setCurrentUser(updatedUser);
-        // localStorage에도 저장
-        if (typeof window !== 'undefined') {
-          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-        }
-      }
+      // 백엔드에서 최신 사용자 코인 정보 업데이트
+      await updateCurrentUserCoinInfo();
       
       alert(`${validTransfers.length}명에게 총 ${totalAmount.toLocaleString()} 코인을 전송했습니다!`);
       console.log('일괄 코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
@@ -313,7 +326,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   };
 
 
-  if (!isLoaded || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-background)' }}>
         <LoadingSpinner size="lg" />
@@ -394,7 +407,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                     <Input
                       value={newRoomName}
                       onChange={(e) => setNewRoomName(e.target.value)}
-                      className="text-2xl font-bold w-32"
+                      className="text-lg font-bold w-32"
                       maxLength={20}
                     />
                     <Button variant="success" size="sm" onClick={handleUpdateRoomName}>

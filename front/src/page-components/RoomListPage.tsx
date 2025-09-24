@@ -20,14 +20,12 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isLoaded) {
-      loadRooms();
-    }
-  }, [isLoaded]);
+    loadRooms();
+  }, []);
 
   // 방 목록 자동 새로고침 (폴링)
   useEffect(() => {
-    if (!isLoaded || !currentUser) return;
+    if (!currentUser) return;
 
     // 5초마다 방 목록을 백그라운드에서 새로고침
     const pollInterval = setInterval(async () => {
@@ -50,7 +48,7 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
     return () => {
       clearInterval(pollInterval);
     };
-  }, [isLoaded, currentUser, rooms]);
+  }, [currentUser, rooms]);
 
   const loadRooms = async () => {
     setLoading(true);
@@ -108,7 +106,7 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
     }
   };
 
-  if (!isLoaded || loading) {
+  if (loading) {
     return <LoadingSpinner message="방 목록을 불러오는 중..." fullScreen />;
   }
 
