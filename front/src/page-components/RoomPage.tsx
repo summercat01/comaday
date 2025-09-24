@@ -90,39 +90,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     };
   }, [currentUser, room, roomCode]);
 
-  // 하트비트 시스템 (1분 30초마다)
-  useEffect(() => {
-    if (!currentUser || !room) return;
-
-    const activeMembers = room.members || [];
-    const currentMember = activeMembers.find(m => m.userId === currentUser.id);
-    const isMember = !!currentMember;
-
-    if (!isMember) return;
-
-    const sendHeartbeat = async () => {
-      try {
-        await roomService.sendHeartbeat(roomCode, currentUser.id);
-        console.log('하트비트 전송 성공');
-      } catch (error) {
-        console.error('하트비트 전송 실패:', error);
-        // 하트비트 실패 시 방에서 자동으로 제거될 수 있으므로 
-        // 방 데이터를 다시 로드하여 상태 확인
-        loadRoomData();
-      }
-    };
-
-    // 즉시 한 번 전송
-    sendHeartbeat();
-
-    // 1분 30초(90초)마다 하트비트 전송
-    const heartbeatInterval = setInterval(sendHeartbeat, 90000);
-
-    return () => {
-      clearInterval(heartbeatInterval);
-    };
-  }, [currentUser, room, roomCode]);
-
   const loadRoomData = async () => {
     if (!currentUser) return;
     
