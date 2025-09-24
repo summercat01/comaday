@@ -37,12 +37,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
       {/* 방 헤더 */}
       <CardHeader>
         <div className="flex-1 min-w-0 pr-8">
-          <CardTitle level={3} className="text-sm sm:text-lg mb-1 sm:mb-2 truncate">
-            {room.name}
-          </CardTitle>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
             <span 
-              className="inline-block px-2 py-1 rounded-full text-xs font-semibold tracking-wide"
+              className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide w-fit"
               style={{ 
                 backgroundColor: 'var(--color-primary)', 
                 color: 'var(--color-secondary)' 
@@ -51,11 +48,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
               방 #{room.roomNumber}
             </span>
           </div>
+          <CardTitle level={3} className="text-sm sm:text-lg truncate">
+            {room.name}
+          </CardTitle>
         </div>
       </CardHeader>
 
       {/* 게임 정보 */}
-      <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg"
+      <div className="mb-2 sm:mb-3 p-2 sm:p-3 rounded-lg"
            style={{ backgroundColor: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)' }}>
         <div className="font-semibold mb-1 text-xs sm:text-sm" style={{ color: 'var(--color-text-title)' }}>
           🎮 게임
