@@ -28,8 +28,8 @@ export const authService = {
    */
   async login(data: LoginRequest): Promise<User> {
     try {
-      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.auth}/login`, data);
-      return response.data;
+      const response = await axiosInstance.post<{ user: User }>(`${API_ENDPOINTS.auth}/login`, data);
+      return response.data.user; // user 객체 추출
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
       throw new Error(apiError?.message || '로그인에 실패했습니다.');

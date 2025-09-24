@@ -63,11 +63,6 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
       return;
     }
 
-    // 디버깅용 로그
-    console.log('🔍 currentUser:', currentUser);
-    console.log('🔍 currentUser.id:', currentUser.id);
-    console.log('🔍 typeof currentUser.id:', typeof currentUser.id);
-
     if (!currentUser.id) {
       alert('사용자 ID가 없습니다. 다시 로그인해주세요.');
       return;
@@ -79,11 +74,9 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
     }
 
     try {
-      console.log('📤 방 입장 요청:', { roomCode: room.roomCode, userId: currentUser.id });
       await roomService.joinRoom(room.roomCode, currentUser.id);
       onJoinRoom(room.roomCode);
     } catch (error: any) {
-      console.error('❌ 방 입장 실패:', error);
       alert(error.message || '방 입장에 실패했습니다.');
     }
   };
