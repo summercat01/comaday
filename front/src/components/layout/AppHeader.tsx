@@ -13,7 +13,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   title = '코마데이',
   showLogout = true 
 }) => {
-  const { currentUser, logout } = useUser();
+  const { currentUser, logout, isLoaded } = useUser();
 
   return (
     <header className="relative">
@@ -33,7 +33,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
 
       {/* 로그아웃 버튼 */}
-      {currentUser && showLogout && (
+      {isLoaded && currentUser && showLogout && (
         <Button
           onClick={logout}
           size="sm"

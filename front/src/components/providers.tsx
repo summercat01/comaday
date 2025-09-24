@@ -88,31 +88,28 @@ export const MessageProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  // 초기 상태에서 localStorage 동기 확인하여 스켈레톤 UI 방지
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+  // Hydration 오류 방지를 위해 초기 상태는 항상 null로 설정
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // 클라이언트에서만 localStorage 로드
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem("currentUser");
         if (saved) {
           const userData = JSON.parse(saved);
-          console.log('초기 로딩: localStorage에서 사용자 정보 복원:', userData);
-          return userData;
+          console.log('localStorage에서 사용자 정보 복원:', userData);
+          setCurrentUser(userData);
+        } else {
+          console.log('localStorage에 저장된 사용자 정보 없음');
         }
       } catch (error) {
-        console.error('초기 로딩: localStorage 사용자 정보 로드 실패:', error);
+        console.error('localStorage 사용자 정보 로드 실패:', error);
         localStorage.removeItem("currentUser");
       }
     }
-    return null;
-  });
-  
-  const [isLoaded, setIsLoaded] = useState(true); // 즉시 로드됨으로 설정
-
-  // 추가적인 초기화가 필요한 경우에만 useEffect 사용
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      console.log('UserProvider 초기화 완료, 현재 사용자:', currentUser);
-    }
+    setIsLoaded(true);
   }, []);
   const [users, setUsers] = useState<User[]>([]);
   const { showError } = useMessage();
