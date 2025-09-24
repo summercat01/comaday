@@ -46,46 +46,55 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
 
     if (!isMember) return;
 
+    let beforeUnloadTriggered = false;
+
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // 사용자에게 확인 메시지 표시
+      beforeUnloadTriggered = true;
+      // 새로고침이 아닌 경우에만 확인 메시지 표시
       event.preventDefault();
       event.returnValue = '정말 방에서 나가시겠습니까?';
-      
-      // 브라우저가 사용자 확인을 받은 후 실제로 나갈 때를 위한 처리
-      // (실제 이탈은 다른 이벤트에서 처리)
       return '정말 방에서 나가시겠습니까?';
     };
 
-    const handlePageHide = () => {
-      // 실제 페이지가 숨겨질 때 (사용자가 확인 후 나갈 때)
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/rooms/${roomCode}/leave-immediately`;
-      const data = JSON.stringify({ userId: currentUser.id });
-      
-      try {
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(apiUrl, new Blob([data], { type: 'application/json' }));
-        } else {
-          fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: data,
-            keepalive: true
-          }).catch(() => {});
+    const handleVisibilityChange = () => {
+      // 페이지가 숨겨지고, beforeunload가 트리거되지 않은 경우 = 새로고침
+      if (document.hidden && !beforeUnloadTriggered) {
+        console.log('새로고침 감지 - 방 나가기 API 호출하지 않음');
+        return;
+      }
+
+      // beforeunload가 트리거된 후 페이지가 숨겨진 경우 = 실제 페이지 이탈
+      if (document.hidden && beforeUnloadTriggered) {
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/rooms/${roomCode}/leave-immediately`;
+        const data = JSON.stringify({ userId: currentUser.id });
+        
+        try {
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(apiUrl, new Blob([data], { type: 'application/json' }));
+          } else {
+            fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: data,
+              keepalive: true
+            }).catch(() => {});
+          }
+          console.log('페이지 이탈 감지 - 방 나가기 API 호출');
+        } catch (error) {
+          console.log('페이지 이탈 시 방 나가기:', error);
         }
-      } catch (error) {
-        console.log('페이지 이탈 시 방 나가기:', error);
       }
     };
 
-    // 브라우저 창/탭 닫기, 새로고침, 다른 페이지로 이동 시 확인
+    // 브라우저 창/탭 닫기, 다른 페이지로 이동 시 확인
     window.addEventListener('beforeunload', handleBeforeUnload);
     
-    // 실제 페이지 이탈 시 API 호출
-    window.addEventListener('pagehide', handlePageHide);
+    // 페이지 가시성 변화 감지 (새로고침 vs 실제 이탈 구분)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser, room, roomCode]);
 
@@ -420,7 +429,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
           {/* 뒤로가기 버튼 */}
           <button 
             onClick={handleLeaveRoom}
-            className="flex items-center justify-center w-8 h-8 p-0 text-lg hover:opacity-70 transition-opacity"
+            className="flex items-center justify-center w-10 h-10 p-0 text-lg hover:opacity-70 transition-opacity"
             style={{ color: 'var(--color-text-title)' }}
           >
             ←
@@ -444,7 +453,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                     <Input
                       value={newRoomName}
                       onChange={(e) => setNewRoomName(e.target.value)}
-                      className="text-lg font-bold w-32"
+                      className="text-2xl font-bold w-32"
                       maxLength={20}
                     />
                     <Button variant="success" size="sm" onClick={handleUpdateRoomName}>
