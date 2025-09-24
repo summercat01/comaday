@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { roomService } from '../api/services/roomService';
 import { coinService } from '../api/services/coinService';
 import { userService } from '../api/services/userService';
+import { rankingService } from '../api/services/rankingService';
 import { Room } from '../types/room';
 import { useUser } from '../components/providers';
 import { Card, CardTitle, Button, Input } from '../components/ui';
@@ -30,12 +31,30 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   const [newRoomName, setNewRoomName] = useState('');
   const [isEditingGame, setIsEditingGame] = useState(false);
   const [newGameName, setNewGameName] = useState('');
+  
+  // 코인 전송 쿨타임 관련 상태
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [isBulkTransferring, setIsBulkTransferring] = useState(false);
+  const [transferCooldown, setTransferCooldown] = useState(0);
+  
+  // 사용자 랭킹 정보 저장
+  const [userRankings, setUserRankings] = useState<{[userId: number]: number}>({});
 
   useEffect(() => {
     if (currentUser) {
     loadRoomData();
     }
   }, [roomCode, currentUser]);
+
+  // 쿨타임 타이머 관리
+  useEffect(() => {
+    if (transferCooldown > 0) {
+      const timer = setTimeout(() => {
+        setTransferCooldown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [transferCooldown]);
 
   // 새로고침 문제로 인해 자동 페이지 이탈 감지 비활성화
   // 오직 명시적인 버튼 클릭과 뒤로가기만 처리
@@ -153,6 +172,11 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
           
           // 백엔드에서 최신 사용자 코인 정보 업데이트
           await updateCurrentUserCoinInfo();
+          
+          // 멤버 변경 시 랭킹 정보도 업데이트
+          if (updatedRoom.members && updatedRoom.members.length > 0) {
+            await loadUserRankings(updatedRoom.members);
+          }
         }
       } catch (error) {
         console.error('방 데이터 폴링 실패:', error);
@@ -188,6 +212,30 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   };
 
+  // 방 멤버들의 랭킹 정보 가져오기
+  const loadUserRankings = async (members: any[]) => {
+    const rankings: {[userId: number]: number} = {};
+    
+    try {
+      await Promise.all(
+        members.map(async (member) => {
+          try {
+            const userRanking = await rankingService.getUserRanking(member.userId);
+            rankings[member.userId] = userRanking.rank || 999;
+          } catch (error) {
+            console.error(`사용자 ${member.userId} 랭킹 조회 실패:`, error);
+            rankings[member.userId] = 999; // 랭킹 조회 실패 시 기본값
+          }
+        })
+      );
+      
+      setUserRankings(rankings);
+      console.log('사용자 랭킹 정보 로드 완료:', rankings);
+    } catch (error) {
+      console.error('랭킹 정보 로드 실패:', error);
+    }
+  };
+
   const loadRoomData = async () => {
     if (!currentUser) return;
     
@@ -201,6 +249,11 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       
       // 백엔드에서 최신 사용자 코인 정보 업데이트
       await updateCurrentUserCoinInfo();
+      
+      // 방 멤버들의 랭킹 정보 로드
+      if (roomData.members && roomData.members.length > 0) {
+        await loadUserRankings(roomData.members);
+      }
     } catch (err: any) {
       console.error('방 정보 불러오기 실패:', err);
       setError(err.message || '방 정보를 불러오는데 실패했습니다.');
@@ -251,7 +304,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   };
 
   const handleCoinTransfer = async () => {
-    if (!currentUser || !selectedReceiver || transferAmount <= 0) return;
+    if (!currentUser || !selectedReceiver || transferAmount <= 0 || isTransferring || transferCooldown > 0) return;
+    
+    setIsTransferring(true);
     
     try {
       await coinService.transfer(currentUser.id, selectedReceiver, transferAmount, roomCode);
@@ -266,15 +321,20 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       // 백엔드에서 최신 사용자 코인 정보 업데이트
       await updateCurrentUserCoinInfo();
       
+      // 쿨타임 설정 (3초)
+      setTransferCooldown(3);
+      
       alert('코인 전송이 완료되었습니다!');
       console.log('코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
     } catch (error: any) {
       alert(error.message || '코인 전송에 실패했습니다.');
+    } finally {
+      setIsTransferring(false);
     }
   };
 
   const handleBulkTransfer = async () => {
-    if (!currentUser) return;
+    if (!currentUser || isBulkTransferring || transferCooldown > 0) return;
     
     // 0보다 큰 금액이 입력된 전송만 필터링
     const validTransfers = Object.entries(bulkTransferAmounts)
@@ -291,6 +351,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       alert(`보유 코인이 부족합니다. (필요: ${totalAmount.toLocaleString()}, 보유: ${currentUser.coinCount.toLocaleString()})`);
       return;
     }
+    
+    setIsBulkTransferring(true);
     
     try {
       // 일괄 전송 API 사용
@@ -311,10 +373,15 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       // 백엔드에서 최신 사용자 코인 정보 업데이트
       await updateCurrentUserCoinInfo();
       
+      // 쿨타임 설정 (5초 - 일괄 전송은 더 긴 쿨타임)
+      setTransferCooldown(5);
+      
       alert(`${validTransfers.length}명에게 총 ${totalAmount.toLocaleString()} 코인을 전송했습니다!`);
       console.log('일괄 코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
     } catch (error: any) {
       alert(error.message || '일괄 코인 전송에 실패했습니다.');
+    } finally {
+      setIsBulkTransferring(false);
     }
   };
 
@@ -504,14 +571,14 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                         : 'border-gray-200 bg-gray-50'
                     }`}
                   >
-                    {/* 아바타 */}
+                    {/* 랭킹 아바타 */}
                     <div 
                       className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm"
                       style={{ 
                         backgroundColor: isCurrentUser ? 'var(--color-primary)' : 'var(--color-gray-dark)'
                       }}
                     >
-                      {member.user.username.charAt(0).toUpperCase()}
+                      {userRankings[member.userId] ? `#${userRankings[member.userId]}` : member.user.username.charAt(0).toUpperCase()}
                     </div>
                     
                     {/* 사용자 정보 */}
@@ -555,26 +622,26 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
         
         {/* 일괄 코인 전송 섹션 */}
         {isMember && activeMembers.length > 1 && (
-          <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-title)' }}>
-                💰 일괄 코인 전송
-              </h3>
-              <div className="text-sm" style={{ color: 'var(--color-text-light)' }}>
-                내 보유: {currentUser.coinCount.toLocaleString()} 코인
-        </div>
-      </div>
+          <div className="mb-6 rounded-xl p-4">
+           
             
             <Button
               variant="primary"
               size="lg"
               fullWidth
               onClick={() => setShowBulkTransfer(true)}
+              disabled={isBulkTransferring || transferCooldown > 0}
               className="flex items-center justify-center gap-2"
             >
-              🎯 방 전체에게 코인 전송
+              {isBulkTransferring ? (
+                <>⏳ 전송 중...</>
+              ) : transferCooldown > 0 ? (
+                <>🕒 대기 중 ({transferCooldown}초)</>
+              ) : (
+                <>💰 코인 전송</>
+              )}
             </Button>
-          </div>
+      </div>
         )}
 
       {/* 방 정보 */}
@@ -610,7 +677,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                               className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
                               style={{ backgroundColor: 'var(--color-gray-dark)' }}
                             >
-                              {receiver.user.username.charAt(0).toUpperCase()}
+                              {userRankings[receiver.userId] ? `#${userRankings[receiver.userId]}` : receiver.user.username.charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <div className="font-semibold">{receiver.user.username}</div>
@@ -642,9 +709,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                   <Button 
                     variant="success" 
                 onClick={handleCoinTransfer}
-                    disabled={!selectedReceiver || transferAmount <= 0 || transferAmount > currentUser.coinCount}
+                    disabled={!selectedReceiver || transferAmount <= 0 || transferAmount > currentUser.coinCount || isTransferring || transferCooldown > 0}
               >
-                전송
+                {isTransferring ? '전송 중...' : transferCooldown > 0 ? `대기 (${transferCooldown}초)` : '전송'}
                   </Button>
                 </div>
             </div>
@@ -678,7 +745,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
                             style={{ backgroundColor: 'var(--color-gray-dark)' }}
                           >
-                            {member.user.username.charAt(0).toUpperCase()}
+                            {userRankings[member.userId] ? `#${userRankings[member.userId]}` : member.user.username.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1">
                             <div className="font-semibold">{member.user.username}</div>
@@ -738,10 +805,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                     disabled={(() => {
                       const validTransfers = Object.entries(bulkTransferAmounts).filter(([_, amount]) => amount > 0);
                       const totalAmount = validTransfers.reduce((sum, [_, amount]) => sum + amount, 0);
-                      return validTransfers.length === 0 || totalAmount > currentUser.coinCount;
+                      return validTransfers.length === 0 || totalAmount > currentUser.coinCount || isBulkTransferring || transferCooldown > 0;
                     })()}
                   >
-                    전송
+                    {isBulkTransferring ? '전송 중...' : transferCooldown > 0 ? `대기 (${transferCooldown}초)` : '전송'}
                   </Button>
                 </div>
               </div>
