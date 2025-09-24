@@ -93,9 +93,20 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   // 클라이언트에서만 localStorage 로드
   useEffect(() => {
-    const saved = localStorage.getItem("currentUser");
-    if (saved) {
-      setCurrentUser(JSON.parse(saved));
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem("currentUser");
+        if (saved) {
+          const userData = JSON.parse(saved);
+          console.log('localStorage에서 사용자 정보 복원:', userData);
+          setCurrentUser(userData);
+        } else {
+          console.log('localStorage에 저장된 사용자 정보 없음');
+        }
+      } catch (error) {
+        console.error('localStorage 사용자 정보 로드 실패:', error);
+        localStorage.removeItem("currentUser");
+      }
     }
     setIsLoaded(true);
   }, []);

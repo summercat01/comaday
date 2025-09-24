@@ -36,67 +36,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   }, [roomCode, isLoaded, currentUser]);
 
-  // 페이지 이탈 시 방에서 나가기 (확인 포함)
-  useEffect(() => {
-    if (!currentUser || !room) return;
-
-    const activeMembers = room.members || [];
-    const currentMember = activeMembers.find(m => m.userId === currentUser.id);
-    const isMember = !!currentMember;
-
-    if (!isMember) return;
-
-    let beforeUnloadTriggered = false;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      beforeUnloadTriggered = true;
-      // 새로고침이 아닌 경우에만 확인 메시지 표시
-      event.preventDefault();
-      event.returnValue = '정말 방에서 나가시겠습니까?';
-      return '정말 방에서 나가시겠습니까?';
-    };
-
-    const handleVisibilityChange = () => {
-      // 페이지가 숨겨지고, beforeunload가 트리거되지 않은 경우 = 새로고침
-      if (document.hidden && !beforeUnloadTriggered) {
-        console.log('새로고침 감지 - 방 나가기 API 호출하지 않음');
-        return;
-      }
-
-      // beforeunload가 트리거된 후 페이지가 숨겨진 경우 = 실제 페이지 이탈
-      if (document.hidden && beforeUnloadTriggered) {
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/rooms/${roomCode}/leave-immediately`;
-        const data = JSON.stringify({ userId: currentUser.id });
-        
-        try {
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon(apiUrl, new Blob([data], { type: 'application/json' }));
-          } else {
-            fetch(apiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: data,
-              keepalive: true
-            }).catch(() => {});
-          }
-          console.log('페이지 이탈 감지 - 방 나가기 API 호출');
-        } catch (error) {
-          console.log('페이지 이탈 시 방 나가기:', error);
-        }
-      }
-    };
-
-    // 브라우저 창/탭 닫기, 다른 페이지로 이동 시 확인
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    // 페이지 가시성 변화 감지 (새로고침 vs 실제 이탈 구분)
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [currentUser, room, roomCode]);
+  // 새로고침 문제로 인해 자동 페이지 이탈 감지 비활성화
+  // 오직 명시적인 버튼 클릭과 뒤로가기만 처리
 
   // Next.js 라우터 변경 감지 (뒤로가기, 앞으로가기 등)
   useEffect(() => {
