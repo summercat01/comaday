@@ -416,16 +416,15 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     <div className="min-h-screen p-3" style={{ backgroundColor: 'var(--color-background)' }}>
       <div className="max-w-md mx-auto">
         {/* 상단 헤더 */}
-        <div className="flex items-center mb-6 gap-3">
+        <div className="flex items-center mb-6 gap-2">
           {/* 뒤로가기 버튼 */}
-          <Button 
-            variant="primary" 
-            size="sm" 
+          <button 
             onClick={handleLeaveRoom}
-            className="flex items-center justify-center w-8 h-8 p-0"
+            className="flex items-center justify-center w-8 h-8 p-0 text-lg hover:opacity-70 transition-opacity"
+            style={{ color: 'var(--color-text-title)' }}
           >
             ←
-          </Button>
+          </button>
           
           {/* 방 정보 */}
           <div className="flex items-center gap-3 flex-1">
