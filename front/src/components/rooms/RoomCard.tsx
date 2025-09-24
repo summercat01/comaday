@@ -25,7 +25,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
 
 
   return (
-    <Card hover className="flex flex-col min-h-[280px] sm:min-h-80 relative">
+    <Card hover className="flex flex-col min-h-[320px] sm:min-h-96 relative">
       {/* 상태 표시등 - 오른쪽 상단 */}
       <div className="absolute top-3 right-3 z-10">
         <div
