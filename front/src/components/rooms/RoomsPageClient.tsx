@@ -16,12 +16,17 @@ export default function RoomsPageClient() {
     alert('방 생성 기능은 준비 중입니다.')
   }
 
+  const handleGoBack = () => {
+    router.push('/')
+  }
+
   return (
     <MessageProvider>
       <UserProvider>
         <RoomListPage 
           onJoinRoom={handleJoinRoom}
           onCreateRoom={handleCreateRoom}
+          onGoBack={handleGoBack}
         />
       </UserProvider>
     </MessageProvider>

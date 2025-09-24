@@ -11,9 +11,10 @@ import { RoomCard } from '../components/rooms';
 interface RoomListPageProps {
   onJoinRoom: (roomCode: string) => void;
   onCreateRoom: () => void;
+  onGoBack?: () => void;
 }
 
-const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
+const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom, onGoBack }) => {
   const { currentUser, isLoaded } = useUser();
   const [rooms, setRooms] = useState<LobbyRoom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,10 +140,26 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
 
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-6xl mx-auto" style={{ backgroundColor: 'var(--color-background)' }}>
-      <Card className="text-center mb-6 sm:mb-8">
-        <CardTitle level={1} className="text-2xl sm:text-4xl mb-3">
+      {/* 상단 헤더 */}
+      <div className="relative flex items-center justify-center mb-6">
+        {/* 뒤로가기 버튼 - 절대 위치 */}
+        {onGoBack && (
+          <button 
+            onClick={onGoBack}
+            className="absolute left-0 flex items-center justify-center w-10 h-10 p-0 text-lg hover:opacity-70 transition-opacity"
+            style={{ color: 'var(--color-text-title)' }}
+          >
+            ←
+          </button>
+        )}
+        
+        {/* 제목 - 절대 중앙 */}
+        <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--color-text-title)' }}>
           🎲 게임 방 목록
-        </CardTitle>
+        </h1>
+      </div>
+
+      <Card className="text-center mb-6 sm:mb-8">
         <div className="text-sm sm:text-lg font-medium" style={{ color: 'var(--color-text-light)' }}>
           총 {rooms.length}개의 방 | 활성 방: {rooms.filter(r => r.memberCount > 0).length}개
         </div>
