@@ -76,12 +76,16 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   };
 
   const handleUpdateGameName = async () => {
-    if (!currentUser || !room) return;
+    if (!currentUser || !room || !newGameName.trim()) return;
     
-    // 임시로 로컬 상태만 업데이트 (백엔드에 게임명 업데이트 API가 없음)
-    setRoom({ ...room, gameName: newGameName });
-    setIsEditingGame(false);
-    alert('게임명이 임시로 변경되었습니다. (페이지 새로고침 시 초기화됨)');
+    try {
+      const updatedRoom = await roomService.updateGameName(roomCode, currentUser.id, newGameName);
+      setRoom(updatedRoom);
+      setIsEditingGame(false);
+      alert('게임명이 성공적으로 변경되었습니다!');
+    } catch (error: any) {
+      alert(error.message || '게임명 수정에 실패했습니다.');
+    }
   };
 
   const handleCoinTransfer = async () => {
@@ -99,11 +103,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   };
 
-  // 수동 새로고침 함수
-  const handleRefresh = async () => {
-    await loadRoomData();
-    alert('방 정보가 새로고침되었습니다.');
-  };
 
   if (!isLoaded || loading) {
     return (
@@ -197,9 +196,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="success" size="sm" onClick={handleRefresh}>
-              🔄
-            </Button>
             <Button variant="primary" size="sm" onClick={() => setIsEditingName(true)}>
               편집
             </Button>
