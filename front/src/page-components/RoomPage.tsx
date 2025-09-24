@@ -30,7 +30,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
 
   useEffect(() => {
     if (isLoaded && currentUser) {
-      loadRoomData();
+    loadRoomData();
     }
   }, [roomCode, isLoaded, currentUser]);
 
@@ -164,6 +164,46 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     };
   }, [currentUser, room, roomCode]);
 
+  // 방 데이터 자동 새로고침 (폴링)
+  useEffect(() => {
+    if (!currentUser || !room) return;
+
+    const activeMembers = room.members || [];
+    const currentMember = activeMembers.find(m => m.userId === currentUser.id);
+    const isMember = !!currentMember;
+
+    if (!isMember) return;
+
+    // 3초마다 방 데이터를 백그라운드에서 새로고침
+    const pollInterval = setInterval(async () => {
+      try {
+        const updatedRoom = await roomService.getRoomByCode(roomCode);
+        
+        // 현재 room 상태와 비교하여 변경사항이 있을 때만 업데이트
+        const hasChanges = 
+          updatedRoom.name !== room.name ||
+          updatedRoom.gameName !== room.gameName ||
+          updatedRoom.members?.length !== room.members?.length ||
+          JSON.stringify(updatedRoom.members?.map(m => m.userId).sort()) !== 
+          JSON.stringify(room.members?.map(m => m.userId).sort());
+
+        if (hasChanges) {
+          console.log('방 정보 변경 감지 - 자동 업데이트');
+          setRoom(updatedRoom);
+          setNewRoomName(updatedRoom.name);
+          setNewGameName(updatedRoom.gameName || '');
+        }
+      } catch (error) {
+        console.error('방 데이터 폴링 실패:', error);
+        // 폴링 실패는 조용히 무시 (사용자 경험에 영향 없음)
+      }
+    }, 3000); // 3초마다 폴링
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [currentUser, room, roomCode]);
+
   const loadRoomData = async () => {
     if (!currentUser) return;
     
@@ -203,7 +243,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       const updatedRoom = await roomService.updateRoomName(roomCode, currentUser.id, newRoomName);
       setRoom(updatedRoom);
       setIsEditingName(false);
-    } catch (error: any) {
+      console.log('방 이름 변경 완료 - 다른 사용자들에게 자동 전파됨');
+      } catch (error: any) {
       alert(error.message || '방 이름 수정에 실패했습니다.');
     }
   };
@@ -216,6 +257,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       setRoom(updatedRoom);
       setIsEditingGame(false);
       alert('게임명이 성공적으로 변경되었습니다!');
+      console.log('게임명 변경 완료 - 다른 사용자들에게 자동 전파됨');
     } catch (error: any) {
       alert(error.message || '게임명 수정에 실패했습니다.');
     }
@@ -229,8 +271,13 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
       setShowTransfer(false);
       setTransferAmount(0);
       setSelectedReceiver(null);
-      loadRoomData();
+      
+      // 코인 전송 후 방 데이터 즉시 새로고침 (코인 수량 업데이트)
+      const updatedRoom = await roomService.getRoomByCode(roomCode);
+      setRoom(updatedRoom);
+      
       alert('코인 전송이 완료되었습니다!');
+      console.log('코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
     } catch (error: any) {
       alert(error.message || '코인 전송에 실패했습니다.');
     }
@@ -337,7 +384,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
             </Button>
           </div>
         </div>
-
+        
         {/* 게임 정보 */}
         <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
           <div className="text-center">
@@ -424,8 +471,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                       </div>
                       <div className="text-sm" style={{ color: 'var(--color-text-light)' }}>
                         💰 {member.user.coinCount.toLocaleString()} 코인
-                      </div>
-                    </div>
+        </div>
+      </div>
 
                     {/* 코인 전송 버튼 (다른 사용자에게만) */}
                     {!isCurrentUser && isMember && (
@@ -459,10 +506,10 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                 </div>
               </div>
             ))}
-          </div>
         </div>
+      </div>
 
-        {/* 방 정보 */}
+      {/* 방 정보 */}
         {!isMember && (
           <div className="text-center bg-yellow-50 border border-yellow-200 rounded-xl p-4">
             <p className="text-yellow-800">
@@ -500,22 +547,22 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                             <div>
                               <div className="font-semibold">{receiver.user.username}</div>
                               <div className="text-sm text-gray-600">💰 {receiver.user.coinCount.toLocaleString()} 코인</div>
-                            </div>
+          </div>
                           </>
                         ) : (
                           <div>사용자를 찾을 수 없습니다</div>
                         );
                       })()}
-                    </div>
-                  )}
-                </div>
-                
+            </div>
+          )}
+      </div>
+
                 <Input
                   label="전송할 코인"
-                  type="number"
-                  value={transferAmount}
+                type="number"
+                value={transferAmount}
                   onChange={(e) => setTransferAmount(Number(e.target.value))}
-                  min="1"
+                min="1"
                   max={currentUser.coinCount}
                   placeholder={`1 ~ ${currentUser.coinCount}`}
                 />
@@ -526,17 +573,17 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                   </Button>
                   <Button 
                     variant="success" 
-                    onClick={handleCoinTransfer}
+                onClick={handleCoinTransfer}
                     disabled={!selectedReceiver || transferAmount <= 0 || transferAmount > currentUser.coinCount}
-                  >
-                    전송
+              >
+                전송
                   </Button>
                 </div>
-              </div>
+            </div>
             </Card>
           </div>
         )}
-      </div>
+        </div>
     </div>
   );
 };

@@ -25,6 +25,33 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
     }
   }, [isLoaded]);
 
+  // 방 목록 자동 새로고침 (폴링)
+  useEffect(() => {
+    if (!isLoaded || !currentUser) return;
+
+    // 5초마다 방 목록을 백그라운드에서 새로고침
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await roomService.getLobbyStatus();
+        
+        // 현재 rooms 상태와 비교하여 변경사항이 있을 때만 업데이트
+        const hasChanges = JSON.stringify(response.rooms) !== JSON.stringify(rooms);
+        
+        if (hasChanges) {
+          console.log('방 목록 변경 감지 - 자동 업데이트');
+          setRooms(response.rooms);
+        }
+      } catch (error) {
+        console.error('방 목록 폴링 실패:', error);
+        // 폴링 실패는 조용히 무시 (사용자 경험에 영향 없음)
+      }
+    }, 5000); // 5초마다 폴링
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [isLoaded, currentUser, rooms]);
+
   const loadRooms = async () => {
     setLoading(true);
     setError(null);
