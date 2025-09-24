@@ -29,16 +29,28 @@ export const RankingTable: React.FC = () => {
     fetchRankings();
   }, []);
 
-  if (loading) {
-    return (
-      <Card>
-        <div className="text-center py-8">
-          <div className="loading-spinner mx-auto mb-4"></div>
-          <p style={{ color: 'var(--color-text-light)' }}>랭킹을 불러오는 중...</p>
-        </div>
-      </Card>
-    );
-  }
+  // 로딩 중일 때는 테이블 구조는 유지하고 데이터만 스켈레톤 표시
+  const renderSkeletonRows = () => {
+    return Array.from({ length: 5 }).map((_, index) => (
+      <tr
+        key={`skeleton-${index}`}
+        className="animate-pulse"
+        style={{
+          backgroundColor: index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray)',
+        }}
+      >
+        <td className="px-6 py-4 text-center">
+          <div className="h-4 bg-gray-300 rounded w-6 mx-auto"></div>
+        </td>
+        <td className="px-6 py-4">
+          <div className="h-4 bg-gray-300 rounded w-20"></div>
+        </td>
+        <td className="px-6 py-4 text-center">
+          <div className="h-4 bg-gray-300 rounded w-16 mx-auto"></div>
+        </td>
+      </tr>
+    ));
+  };
 
   if (error) {
     return (
@@ -67,27 +79,33 @@ export const RankingTable: React.FC = () => {
               </tr>
             </thead>
             <tbody style={{ borderColor: 'var(--color-border)' }} className="divide-y">
-              {rankings.map((user, index) => (
-                <tr
-                  key={user.id}
-                  className="transition-colors hover:bg-opacity-50"
-                  style={{
-                    backgroundColor: index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray-main)',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-success-bg)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray-main)'}
-                >
-                  <td className="px-6 py-4 text-center font-bold" style={{ color: 'var(--color-primary-dark)' }}>
-                    {user.rank}
-                  </td>
-                  <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-text-title)' }}>
-                    {user.username}
-                  </td>
-                  <td className="px-6 py-4 text-center font-semibold" style={{ color: 'var(--color-success)' }}>
-                    {user.totalCoins.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+              {loading ? (
+                // 로딩 중일 때는 스켈레톤 행들 표시
+                renderSkeletonRows()
+              ) : (
+                // 데이터 로드 완료 시 실제 랭킹 데이터 표시
+                rankings.map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className="transition-colors hover:bg-opacity-50"
+                    style={{
+                      backgroundColor: index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray-main)',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-success-bg)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'var(--color-card-bg)' : 'var(--color-gray-main)'}
+                  >
+                    <td className="px-6 py-4 text-center font-bold" style={{ color: 'var(--color-primary-dark)' }}>
+                      {user.rank}
+                    </td>
+                    <td className="px-6 py-4 font-medium" style={{ color: 'var(--color-text-title)' }}>
+                      {user.username}
+                    </td>
+                    <td className="px-6 py-4 text-center font-semibold" style={{ color: 'var(--color-success)' }}>
+                      {user.totalCoins.toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -41,8 +41,8 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
         <AppHeader showLogout={false} />
         
         <main className="flex-1 max-w-4xl mx-auto p-5 space-y-8">
-          {/* 랭킹 테이블 스켈레톤 - API 데이터 로딩 중 */}
-          <SkeletonLoader type="ranking" />
+          {/* 랭킹 테이블 - 컨테이너는 유지하고 데이터만 스켈레톤 */}
+          <RankingTable />
 
           {/* 액션 버튼들 - 정적 요소이므로 실제 버튼 표시 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
