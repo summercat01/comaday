@@ -1,8 +1,7 @@
-import { Controller, Post, Body, Get, Param, UseGuards, Request, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Request, Put } from '@nestjs/common';
 import { CoinsService } from './coins.service';
 import { CoinTransaction } from './entities/coin-transaction.entity';
 // TransactionLimit 제거 (방 제한만 사용)
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 // TransactionLimitService 제거 (방 제한만 사용)
 import { BulkTransferDto } from './dto/bulk-transfer.dto';
 
@@ -28,7 +27,6 @@ export class CoinsController {
     return this.coinsService.getTransactions(+userId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('transactions')
   async getAllTransactions(): Promise<CoinTransaction[]> {
     return this.coinsService.getAllTransactions();

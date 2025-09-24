@@ -14,7 +14,14 @@ export class RankingService {
   ) {}
 
   async getRankings(): Promise<Ranking[]> {
-    return this.rankingRepository.find({ order: { totalCoins: 'DESC' } });
+    const rankings = await this.rankingRepository.find({ order: { totalCoins: 'DESC' } });
+    
+    // 랭킹 순위 계산
+    rankings.forEach((ranking, index) => {
+      ranking.rank = index + 1;
+    });
+    
+    return rankings;
   }
 
   async getUserRanking(userId: number): Promise<Ranking> {
@@ -34,6 +41,7 @@ export class RankingService {
         userId: user.id,
         username: user.username,
         totalCoins: user.coinCount,
+        rank: 0, // 초기값
       });
     } else {
       // 있으면 정보만 갱신
@@ -42,5 +50,17 @@ export class RankingService {
     }
 
     await this.rankingRepository.save(ranking);
+    
+    // 전체 랭킹 업데이트
+    await this.updateAllRankings();
+  }
+
+  private async updateAllRankings(): Promise<void> {
+    const rankings = await this.rankingRepository.find({ order: { totalCoins: 'DESC' } });
+    
+    for (let i = 0; i < rankings.length; i++) {
+      rankings[i].rank = i + 1;
+      await this.rankingRepository.save(rankings[i]);
+    }
   }
 }

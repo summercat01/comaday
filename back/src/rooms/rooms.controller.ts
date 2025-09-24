@@ -7,17 +7,14 @@ import {
   Body, 
   Param, 
   Query,
-  UseGuards,
   Request
 } from '@nestjs/common';
 import { RoomsService, CreateRoomDto } from './rooms.service';
 import { Room } from './entities/room.entity';
 import { RoomMember } from './entities/room-member.entity';
 import { 
-  RequiredFieldException,
-  RoomDescriptionRequiredException 
+  RequiredFieldException
 } from '../common/exceptions/custom.exceptions';
-import { ERROR_MESSAGES } from '../common/constants/error-messages';
 
 @Controller('rooms')
 export class RoomsController {
@@ -28,10 +25,9 @@ export class RoomsController {
    */
   @Post()
   async createRoom(
-    @Body() createRoomDto: CreateRoomDto & { hostUserId: number }
+    @Body() createRoomDto: CreateRoomDto
   ): Promise<Room> {
-    const { hostUserId, ...roomData } = createRoomDto;
-    return this.roomsService.createRoom(hostUserId, roomData);
+    return this.roomsService.createRoom(createRoomDto);
   }
 
   /**
@@ -54,6 +50,7 @@ export class RoomsController {
       roomCode: string;
       roomNumber: number;
       name: string;
+      gameName?: string;
       memberCount: number;
       maxMembers: number;
     }>;
@@ -125,36 +122,15 @@ export class RoomsController {
   }
 
   /**
-   * 방 닫기 (방장만 가능)
+   * 방 삭제 (사용자 생성 방만 가능)
    */
   @Post(':roomCode/close')
   async closeRoom(
-    @Param('roomCode') roomCode: string,
-    @Body('hostUserId') hostUserId: number
-  ): Promise<Room> {
-    if (!hostUserId) {
-      throw new RequiredFieldException('방장 ID');
-    }
-    return this.roomsService.closeRoom(roomCode, hostUserId);
+    @Param('roomCode') roomCode: string
+  ): Promise<{ message: string }> {
+    return this.roomsService.closeRoom(roomCode);
   }
 
-  /**
-   * 방 설명 변경 (방 멤버 누구나 가능)
-   */
-  @Put(':roomCode/description')
-  async updateRoomDescription(
-    @Param('roomCode') roomCode: string,
-    @Body('userId') userId: number,
-    @Body('description') description: string
-  ): Promise<Room> {
-    if (!userId) {
-      throw new RequiredFieldException('사용자 ID');
-    }
-    if (description === undefined || description === null) {
-      throw new RoomDescriptionRequiredException(ERROR_MESSAGES.ROOM.DESCRIPTION_REQUIRED);
-    }
-    return this.roomsService.updateRoomDescription(roomCode, userId, description);
-  }
 
   /**
    * 방 제목 변경 (방 멤버 누구나 가능)
@@ -189,18 +165,5 @@ export class RoomsController {
     return this.roomsService.updateGameName(roomCode, userId, gameName);
   }
 
-  /**
-   * 하트비트 업데이트 (사용자가 살아있음을 알림)
-   */
-  @Post(':roomCode/heartbeat')
-  async updateHeartbeat(
-    @Param('roomCode') roomCode: string,
-    @Body('userId') userId: number
-  ): Promise<{ success: boolean; message: string }> {
-    if (!userId) {
-      throw new RequiredFieldException('사용자 ID');
-    }
-    return this.roomsService.updateHeartbeat(roomCode, userId);
-  }
 
 }

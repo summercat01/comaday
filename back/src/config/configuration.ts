@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 
 // .env.local 파일 로드
-dotenv.config({ path: path.join(__dirname, '../../.env.local') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 export default () => ({
   port: parseInt(process.env.PORT, 10) || 4000,
@@ -18,10 +18,6 @@ export default () => ({
     logging: ['error', 'query', 'schema'],
   },
   frontend: {
-    url: process.env.FRONTEND_URL || 'http://localhost:3000',
-  },
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiration: process.env.JWT_EXPIRATION,
+    url: process.env.FRONTEND_URL || 'https://comaday.duckdns.org',
   },
 }); 

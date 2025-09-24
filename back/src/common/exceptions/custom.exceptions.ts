@@ -146,11 +146,6 @@ export class RoomClosedException extends BaseCustomException {
   }
 }
 
-export class RoomNotActiveException extends BaseCustomException {
-  constructor(message: string = ERROR_MESSAGES.ROOM.ROOM_NOT_ACTIVE) {
-    super(message, HttpStatus.BAD_REQUEST, ERROR_TYPES.BUSINESS_LOGIC, 'ROOM_004');
-  }
-}
 
 export class AlreadyJoinedRoomException extends BaseCustomException {
   constructor(message: string = ERROR_MESSAGES.ROOM.ALREADY_JOINED) {
@@ -194,11 +189,6 @@ export class RoomDescriptionRequiredException extends BaseCustomException {
   }
 }
 
-export class ActiveRoomOnlyException extends BaseCustomException {
-  constructor(message: string = ERROR_MESSAGES.ROOM.ACTIVE_ROOM_ONLY) {
-    super(message, HttpStatus.BAD_REQUEST, ERROR_TYPES.BUSINESS_LOGIC, 'ROOM_012');
-  }
-}
 
 /**
  * 거래 제한 관련 예외

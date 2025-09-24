@@ -28,9 +28,6 @@ export class RoomMember {
   @Column({ default: () => 'CURRENT_TIMESTAMP', comment: '방 입장 시간' })
   joinedAt: Date;
 
-  @Column({ default: () => 'CURRENT_TIMESTAMP', comment: '마지막 하트비트 시간' })
-  lastHeartbeat: Date;
-
   @ManyToOne(() => Room, room => room.members, { onDelete: 'CASCADE' })
   room: Room;
 
@@ -44,8 +41,4 @@ export class RoomMember {
   updatedAt: Date;
 
   // 편의 메서드들 - 레코드 존재 자체가 활성 상태
-
-  get isHost(): boolean {
-    return this.room?.hostUserId === this.userId;
-  }
 }

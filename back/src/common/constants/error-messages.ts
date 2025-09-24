@@ -51,7 +51,6 @@ export const ERROR_MESSAGES = {
     ROOM_NAME_REQUIRED: '방 이름은 필수 입력 항목입니다.',
     ROOM_FULL: '방이 가득 찼습니다.',
     ROOM_CLOSED: '방이 이미 닫혔습니다.',
-    ROOM_NOT_ACTIVE: '활성 상태인 방만 입장할 수 있습니다.',
     ALREADY_JOINED: '이미 참가 중인 방입니다.',
     NOT_MEMBER: '방 멤버가 아닙니다.',
     MEMBER_NOT_FOUND: '방 멤버를 찾을 수 없습니다.',
@@ -63,9 +62,6 @@ export const ERROR_MESSAGES = {
     LEAVE_FAILED: '방 나가기에 실패했습니다.',
     DESCRIPTION_REQUIRED: '방 설명이 필요합니다.',
     DESCRIPTION_UPDATE_FAILED: '방 설명 변경에 실패했습니다.',
-    ACTIVE_ROOM_ONLY: '활성 상태인 방에서만 가능합니다.',
-    ACTIVE_ROOM_DESCRIPTION_ONLY: '활성 상태인 방만 설명을 변경할 수 있습니다.',
-    HEARTBEAT_FAILED: '하트비트 업데이트에 실패했습니다.',
     MAX_MEMBERS_EXCEEDED: '최대 인원을 초과했습니다.',
   },
 

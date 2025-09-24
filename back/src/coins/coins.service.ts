@@ -13,7 +13,6 @@ import {
   InsufficientBalanceException,
   RoomNotFoundException,
   NotRoomMemberException,
-  RoomNotActiveException,
   RoomTransactionLimitException,
   UserNotFoundException,
   SameUserTransferException,
@@ -93,10 +92,6 @@ export class CoinsService {
       throw new RoomNotFoundException(ERROR_MESSAGES.ROOM.NOT_FOUND);
     }
 
-    // 방 상태 확인 (활성 상태인 방에서만 거래 가능)
-    if (room.status !== 'ACTIVE') {
-      throw new RoomNotActiveException(ERROR_MESSAGES.ROOM.ACTIVE_ROOM_ONLY);
-    }
 
     // 방 멤버 확인
     const senderMember = await this.roomMemberRepository.findOne({
@@ -187,10 +182,6 @@ export class CoinsService {
       throw new RoomNotFoundException(ERROR_MESSAGES.ROOM.NOT_FOUND);
     }
 
-    // 방 상태 확인
-    if (room.status !== 'ACTIVE') {
-      throw new RoomNotActiveException(ERROR_MESSAGES.ROOM.ROOM_NOT_ACTIVE);
-    }
 
     // 발송자가 방 멤버인지 확인
     const senderMember = await this.roomMemberRepository.findOne({

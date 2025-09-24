@@ -28,7 +28,7 @@ export class UsersService {
     const user = this.usersRepository.create({ 
       username, 
       password: hashedPassword,
-      coinCount: 1000 // 초기 코인
+      coinCount: 0 // 초기 코인
     });
     const savedUser = await this.usersRepository.save(user);
     await this.rankingService.updateOrCreateRanking(savedUser.id);
@@ -59,27 +59,6 @@ export class UsersService {
     }
 
     user.coinCount += amount;
-    const savedUser = await this.usersRepository.save(user);
-    await this.rankingService.updateOrCreateRanking(savedUser.id);
-    return savedUser;
-  }
-
-  async guestLogin(username: string, password: string): Promise<User> {
-    const user = await this.findByUsername(username);
-    
-    if (!user) {
-      // 새로운 비회원 계정 생성
-      return this.createWithPassword(username, password);
-    }
-
-    // 비밀번호 확인
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('아이디 또는 비밀번호가 일치하지 않습니다.');
-    }
-
-    // 마지막 로그인 시간 업데이트
-    // lastLoginAt 필드 제거됨
     const savedUser = await this.usersRepository.save(user);
     await this.rankingService.updateOrCreateRanking(savedUser.id);
     return savedUser;

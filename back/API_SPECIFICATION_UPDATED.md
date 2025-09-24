@@ -448,7 +448,9 @@ curl -X POST http://localhost:4000/api/auth/login \
 ```json
 {
   "name": "즐거운 게임방",
-  "maxMembers": 6
+  "description": "친구들과 함께 보드게임을 즐겨요",
+  "maxMembers": 6,
+  "hostUserId": 1
 }
 ```
 
@@ -458,15 +460,18 @@ curl -X POST http://localhost:4000/api/auth/login \
   "id": 12,
   "roomCode": "ROOM_USER_001",
   "name": "즐거운 게임방",
-  "originalName": "즐거운 게임방",
   "gameName": null,
-  "originalGameName": null,
+  "description": "친구들과 함께 보드게임을 즐겨요",
+  "originalDescription": "친구들과 함께 보드게임을 즐겨요",
+  "hostUserId": 1,
   "maxMembers": 6,
+  "status": "ACTIVE",
   "startedAt": "2025-09-23T12:00:00.000Z",
   "members": [],
   "createdAt": "2025-09-23T12:00:00.000Z",
   "updatedAt": "2025-09-23T12:00:00.000Z",
-  "memberCount": 0
+  "memberCount": 0,
+  "isActive": true
 }
 ```
 
@@ -488,15 +493,18 @@ curl -X POST http://localhost:4000/api/auth/login \
       "id": 1,
       "roomCode": "ROOM01",
       "name": "1번 방",
-      "originalName": "1번 방",
       "gameName": null,
-      "originalGameName": null,
-      "maxMembers": 2,
+      "description": "오프라인 1번 방에 대응하는 온라인 룸",
+      "originalDescription": "오프라인 1번 방에 대응하는 온라인 룸",
+      "hostUserId": 0,
+      "maxMembers": 8,
+      "status": "ACTIVE",
       "startedAt": "2025-09-23T11:32:42.433Z",
       "members": [],
       "createdAt": "2025-09-23T11:32:42.433Z",
       "updatedAt": "2025-09-23T11:32:42.433Z",
-      "memberCount": 0
+      "memberCount": 0,
+      "isActive": true
     }
   ],
   "total": 11
@@ -509,30 +517,28 @@ curl -X POST http://localhost:4000/api/auth/login \
 
 대기방 UI용 간소화된 방 정보 조회
 
- **Response:**
- ```json
- {
-   "rooms": [
-     {
-       "roomCode": "ROOM01",
-       "roomNumber": 1,
-       "name": "1번 방",
-       "gameName": "스플렌더",
-       "memberCount": 0,
-       "maxMembers": 8
-     },
-     {
-       "roomCode": "ROOM02",
-       "roomNumber": 2,
-       "name": "2번 방",
-       "gameName": null,
-       "memberCount": 2,
-       "maxMembers": 8
-     }
-   ],
-   "totalRooms": 11
- }
- ```
+**Response:**
+```json
+{
+  "rooms": [
+    {
+      "roomCode": "ROOM01",
+      "roomNumber": 1,
+      "name": "1번 방",
+      "memberCount": 0,
+      "maxMembers": 8
+    },
+    {
+      "roomCode": "ROOM02",
+      "roomNumber": 2,
+      "name": "2번 방",
+      "memberCount": 2,
+      "maxMembers": 8
+    }
+  ],
+  "totalRooms": 11
+}
+```
 
 ### 방 상세 조회
 
@@ -843,6 +849,33 @@ curl -X POST http://localhost:4000/api/auth/login \
 }
 ```
 
+### 하트비트 전송
+
+#### `POST /rooms/{roomCode}/heartbeat`
+
+활성 상태 갱신을 위한 하트비트 전송
+
+**Path Parameters:**
+- `roomCode` (string): 방 코드
+
+**Request Body:**
+```json
+{
+  "userId": 1
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "하트비트가 갱신되었습니다.",
+  "lastHeartbeat": "2025-09-23T12:05:00.000Z"
+}
+```
+
+**Note:** 1분 30초 이상 하트비트가 없으면 자동으로 방에서 퇴장됩니다.
+
 ---
 
 ## 랭킹 API
@@ -978,16 +1011,19 @@ curl -X POST http://localhost:4000/api/auth/login \
 {
   id: number;                    // 방 ID
   roomCode: string;              // 방 코드 (유니크)
-  name: string;                  // 방 이름 (현재)
-  originalName: string;          // 원래 방 이름 (초기화용)
-  gameName?: string;             // 게임 이름 (현재)
-  originalGameName?: string;     // 원래 게임 이름 (초기화용)
-  maxMembers: number;            // 최대 인원 (1-6번방: 2명, 7-11번방: 3명)
+  name: string;                  // 방 이름
+  gameName?: string;             // 게임 이름
+  description: string;           // 방 설명 (현재)
+  originalDescription: string;   // 원본 방 설명 (초기화용)
+  hostUserId: number;            // 방장 ID (0: 시스템 룸)
+  maxMembers: number;            // 최대 인원
+  status: 'ACTIVE' | 'CLOSED';   // 방 상태
   startedAt: Date;               // 방 생성 시간
   members: RoomMember[];         // 방 멤버들
   createdAt: Date;               // 생성 시간
   updatedAt: Date;               // 수정 시간
   memberCount: number;           // 현재 멤버 수 (계산 프로퍼티)
+  isActive: boolean;             // 활성 상태 여부 (계산 프로퍼티)
 }
 ```
 
@@ -999,9 +1035,11 @@ curl -X POST http://localhost:4000/api/auth/login \
   roomId: number;                // 방 ID
   userId: number;                // 사용자 ID
   joinedAt: Date;                // 입장 시간
+  lastHeartbeat: Date;           // 마지막 하트비트
   user: User;                    // 사용자 정보
   createdAt: Date;               // 생성 시간
   updatedAt: Date;               // 수정 시간
+  isHost: boolean;               // 방장 여부 (계산 프로퍼티)
 }
 ```
 
@@ -1051,17 +1089,14 @@ curl -X POST http://localhost:4000/api/auth/login \
 ### 자동 방 관리
 
 - **11개 시스템 룸** 자동 생성 (ROOM01-ROOM11)
-- **방별 최대 인원**: 1-6번방은 2명, 7-11번방은 3명
-- **오프라인 물리적 방과 1:1 대응**
-- **시스템 룸은 삭제 불가**, 사용자가 추가 방 생성 가능
-- **자동 초기화**: 방이 비면 이름과 게임명이 원래대로 복원
+- 오프라인 물리적 방과 1:1 대응
+- 시스템 룸은 삭제 불가, 사용자가 추가 방 생성 가능
 
-### 방 입장/퇴장 처리
+### 실시간 기능
 
-- **명시적 입장**: `POST /rooms/{roomCode}/join`
-- **명시적 나가기**: `POST /rooms/{roomCode}/leave`
-- **즉시 나가기**: `POST /rooms/{roomCode}/leave-immediately` (페이지 이탈 시)
-- **실시간 업데이트**: 클라이언트 폴링 기반
+- **하트비트 시스템**: 1분 30초마다 자동 체크
+- **자동 퇴장**: 비활성 사용자는 자동으로 방에서 제거
+- **폴링 기반**: 실시간 업데이트는 클라이언트 폴링으로 구현
 
 ### 에러 처리
 
