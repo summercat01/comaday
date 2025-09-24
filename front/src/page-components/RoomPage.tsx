@@ -32,6 +32,97 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   }, [roomCode, isLoaded, currentUser]);
 
+  // 페이지 이탈 시 방에서 즉시 나가기
+  useEffect(() => {
+    if (!currentUser || !room) return;
+
+    const activeMembers = room.members || [];
+    const currentMember = activeMembers.find(m => m.userId === currentUser.id);
+    const isMember = !!currentMember;
+
+    if (!isMember) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // beforeunload에서는 비동기 작업이 제한되므로 sendBeacon 사용
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/rooms/${roomCode}/leave-immediately`;
+      const data = JSON.stringify({ userId: currentUser.id });
+      
+      try {
+        // navigator.sendBeacon은 페이지 이탈 시에도 확실히 전송됨
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(apiUrl, new Blob([data], { type: 'application/json' }));
+        } else {
+          // sendBeacon을 지원하지 않는 브라우저를 위한 fallback
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: data,
+            keepalive: true // 페이지 이탈 후에도 요청 유지
+          }).catch(() => {
+            // 에러 무시 (API 특성상 관대)
+          });
+        }
+      } catch (error) {
+        console.log('페이지 이탈 시 방 나가기:', error);
+      }
+    };
+
+    const handleVisibilityChange = async () => {
+      // 탭이 백그라운드로 갈 때 (완전 이탈은 아니지만 참고용)
+      if (document.visibilityState === 'hidden') {
+        try {
+          await roomService.leaveRoomImmediately(roomCode, currentUser.id);
+        } catch (error) {
+          console.log('탭 백그라운드 시 방 나가기:', error);
+        }
+      }
+    };
+
+    // 브라우저 창/탭 닫기, 새로고침, 다른 페이지로 이동
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // 탭 백그라운드 전환 (선택적)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [currentUser, room, roomCode]);
+
+  // 하트비트 시스템 (1분 30초마다)
+  useEffect(() => {
+    if (!currentUser || !room) return;
+
+    const activeMembers = room.members || [];
+    const currentMember = activeMembers.find(m => m.userId === currentUser.id);
+    const isMember = !!currentMember;
+
+    if (!isMember) return;
+
+    const sendHeartbeat = async () => {
+      try {
+        await roomService.sendHeartbeat(roomCode, currentUser.id);
+        console.log('하트비트 전송 성공');
+      } catch (error) {
+        console.error('하트비트 전송 실패:', error);
+        // 하트비트 실패 시 방에서 자동으로 제거될 수 있으므로 
+        // 방 데이터를 다시 로드하여 상태 확인
+        loadRoomData();
+      }
+    };
+
+    // 즉시 한 번 전송
+    sendHeartbeat();
+
+    // 1분 30초(90초)마다 하트비트 전송
+    const heartbeatInterval = setInterval(sendHeartbeat, 90000);
+
+    return () => {
+      clearInterval(heartbeatInterval);
+    };
+  }, [currentUser, room, roomCode]);
+
   const loadRoomData = async () => {
     if (!currentUser) return;
     
@@ -55,7 +146,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     
     if (window.confirm('정말 방에서 나가시겠습니까?')) {
       try {
-        await roomService.leaveRoom(roomCode, currentUser.id);
+        const result = await roomService.leaveRoom(roomCode, currentUser.id);
+        console.log('방 나가기 성공:', result.message);
         onLeaveRoom();
       } catch (error: any) {
         alert(error.message || '방 나가기에 실패했습니다.');
