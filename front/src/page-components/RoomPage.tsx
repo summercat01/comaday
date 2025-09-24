@@ -429,18 +429,24 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
             </span>
             <div>
               {isEditingName ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newRoomName}
-                    onChange={(e) => setNewRoomName(e.target.value)}
-                    className="text-lg font-bold w-32"
-                  />
-                  <Button variant="success" size="sm" onClick={handleUpdateRoomName}>
-                    ✓
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => setIsEditingName(false)}>
-                    ✕
-                  </Button>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newRoomName}
+                      onChange={(e) => setNewRoomName(e.target.value)}
+                      className="text-lg font-bold w-32"
+                      maxLength={20}
+                    />
+                    <Button variant="success" size="sm" onClick={handleUpdateRoomName}>
+                      ✓
+                    </Button>
+                    <Button variant="danger" size="sm" onClick={() => setIsEditingName(false)}>
+                      ✕
+                    </Button>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {newRoomName.length}/20자
+                  </div>
                 </div>
               ) : (
                 <h1 
@@ -466,19 +472,25 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
         <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
           <div className="text-center">
             {isEditingGame ? (
-              <div className="flex items-center justify-center gap-2">
-                <Input
-                  value={newGameName}
-                  onChange={(e) => setNewGameName(e.target.value)}
-                  placeholder="게임명 입력"
-                  className="text-center font-bold text-lg w-40"
-                />
-                <Button variant="success" size="sm" onClick={handleUpdateGameName}>
-                  ✓
-                </Button>
-                <Button variant="danger" size="sm" onClick={() => setIsEditingGame(false)}>
-                  ✕
-                </Button>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={newGameName}
+                    onChange={(e) => setNewGameName(e.target.value)}
+                    placeholder="게임명 입력"
+                    className="text-center font-bold text-lg w-40"
+                    maxLength={20}
+                  />
+                  <Button variant="success" size="sm" onClick={handleUpdateGameName}>
+                    ✓
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => setIsEditingGame(false)}>
+                    ✕
+                  </Button>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {newGameName.length}/20자
+                </div>
               </div>
             ) : (
                 <div 
