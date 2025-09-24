@@ -23,6 +23,9 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   const [showTransfer, setShowTransfer] = useState(false);
   const [transferAmount, setTransferAmount] = useState(0);
   const [selectedReceiver, setSelectedReceiver] = useState<number | null>(null);
+  const [showBulkTransfer, setShowBulkTransfer] = useState(false);
+  const [bulkTransferAmount, setBulkTransferAmount] = useState(0);
+  const [selectedReceivers, setSelectedReceivers] = useState<number[]>([]);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [isEditingGame, setIsEditingGame] = useState(false);
@@ -283,6 +286,50 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     }
   };
 
+  const handleBulkTransfer = async () => {
+    if (!currentUser || selectedReceivers.length === 0 || bulkTransferAmount <= 0) return;
+    
+    const totalAmount = bulkTransferAmount * selectedReceivers.length;
+    if (totalAmount > currentUser.coinCount) {
+      alert(`보유 코인이 부족합니다. (필요: ${totalAmount}, 보유: ${currentUser.coinCount})`);
+      return;
+    }
+    
+    try {
+      // 일괄 전송 API 사용
+      await coinService.bulkTransfer({
+        senderId: currentUser.id,
+        roomCode: roomCode,
+        description: `방 "${room?.name}"에서 일괄 코인 전송`,
+        transfers: selectedReceivers.map(receiverId => ({
+          receiverId,
+          amount: bulkTransferAmount
+        }))
+      });
+      
+      setShowBulkTransfer(false);
+      setBulkTransferAmount(0);
+      setSelectedReceivers([]);
+      
+      // 코인 전송 후 방 데이터 즉시 새로고침
+      const updatedRoom = await roomService.getRoomByCode(roomCode);
+      setRoom(updatedRoom);
+      
+      alert(`${selectedReceivers.length}명에게 각각 ${bulkTransferAmount} 코인을 전송했습니다!`);
+      console.log('일괄 코인 전송 완료 - 다른 사용자들에게 자동 전파됨');
+    } catch (error: any) {
+      alert(error.message || '일괄 코인 전송에 실패했습니다.');
+    }
+  };
+
+  const toggleReceiverSelection = (userId: number) => {
+    setSelectedReceivers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
 
   if (!isLoaded || loading) {
     return (
@@ -474,19 +521,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
         </div>
       </div>
 
-                    {/* 코인 전송 버튼 (다른 사용자에게만) */}
-                    {!isCurrentUser && isMember && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedReceiver(member.userId);
-                          setShowTransfer(true);
-                        }}
-                      >
-                        전송
-                      </Button>
-                    )}
                   </div>
                 );
               })
@@ -509,7 +543,31 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
         </div>
       </div>
 
-      {/* 방 정보 */}
+        {/* 일괄 코인 전송 섹션 */}
+        {isMember && activeMembers.length > 1 && (
+          <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold" style={{ color: 'var(--color-text-title)' }}>
+                💰 일괄 코인 전송
+              </h3>
+              <div className="text-sm" style={{ color: 'var(--color-text-light)' }}>
+                내 보유: {currentUser.coinCount.toLocaleString()} 코인
+              </div>
+            </div>
+            
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => setShowBulkTransfer(true)}
+              className="flex items-center justify-center gap-2"
+            >
+              🎯 방 전체에게 코인 전송
+            </Button>
+          </div>
+        )}
+
+        {/* 방 정보 */}
         {!isMember && (
           <div className="text-center bg-yellow-50 border border-yellow-200 rounded-xl p-4">
             <p className="text-yellow-800">
@@ -583,7 +641,102 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
             </Card>
           </div>
         )}
-        </div>
+
+        {/* 일괄 코인 전송 모달 */}
+        {showBulkTransfer && (
+          <div className="fixed inset-0 bg-modal-overlay flex items-center justify-center p-5 z-50">
+            <Card className="w-full max-w-lg" padding="lg">
+              <CardTitle className="text-2xl font-bold mb-4">
+                🎯 일괄 코인 전송
+              </CardTitle>
+              
+              <div className="space-y-4">
+                {/* 받는 사람들 선택 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                    받는 사람 선택 ({selectedReceivers.length}명)
+                  </label>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {activeMembers
+                      .filter(member => member.userId !== currentUser.id)
+                      .map(member => (
+                        <div
+                          key={member.id}
+                          className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                            selectedReceivers.includes(member.userId)
+                              ? 'border-green-400 bg-green-50'
+                              : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                          }`}
+                          onClick={() => toggleReceiverSelection(member.userId)}
+                        >
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedReceivers.includes(member.userId)}
+                              onChange={() => toggleReceiverSelection(member.userId)}
+                              className="w-4 h-4 mr-2"
+                            />
+                            <div 
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                              style={{ backgroundColor: 'var(--color-gray-dark)' }}
+                            >
+                              {member.user.username.charAt(0).toUpperCase()}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-semibold">{member.user.username}</div>
+                            <div className="text-sm text-gray-600">💰 {member.user.coinCount.toLocaleString()} 코인</div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                
+                {/* 전송할 코인 */}
+                <Input
+                  label="각자에게 전송할 코인"
+                  type="number"
+                  value={bulkTransferAmount}
+                  onChange={(e) => setBulkTransferAmount(Number(e.target.value))}
+                  min="1"
+                  placeholder="코인 수량 입력"
+                />
+                
+                {/* 총 필요 코인 표시 */}
+                {selectedReceivers.length > 0 && bulkTransferAmount > 0 && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-sm font-medium text-blue-800">
+                      총 필요 코인: {(bulkTransferAmount * selectedReceivers.length).toLocaleString()} 
+                      (각 {bulkTransferAmount} × {selectedReceivers.length}명)
+                    </div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      내 보유: {currentUser.coinCount.toLocaleString()} 코인
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="danger" onClick={() => {
+                    setShowBulkTransfer(false);
+                    setSelectedReceivers([]);
+                    setBulkTransferAmount(0);
+                  }}>
+                    취소
+                  </Button>
+                  <Button 
+                    variant="success" 
+                    onClick={handleBulkTransfer}
+                    disabled={selectedReceivers.length === 0 || bulkTransferAmount <= 0 || 
+                      (bulkTransferAmount * selectedReceivers.length) > currentUser.coinCount}
+                  >
+                    전송
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
