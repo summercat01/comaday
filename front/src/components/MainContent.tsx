@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "./providers";
 import { LoginForm } from "./auth";
 import { RankingTable } from "./ranking";
-import { CoinTransferModal } from "./coin";
 import { AppHeader, AppFooter, LoadingSpinner, SkeletonLoader } from "./layout";
 import { Button } from "./ui";
 
@@ -16,7 +15,6 @@ interface MainContentProps {
 
 const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
   const { currentUser, isLoaded, login } = useUser();
-  const [showTransfer, setShowTransfer] = useState(false);
   const router = useRouter();
 
   const handleGoToRooms = () => {
@@ -27,12 +25,6 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
     }
   };
 
-  const handleTransferSuccess = () => {
-    // 전송 성공 후 페이지 새로고침 또는 상태 업데이트
-    setTimeout(() => {
-      window.location.reload();
-    }, 700);
-  };
 
   // 로딩 중일 때는 랭킹 부분만 스켈레톤 UI 표시
   if (!isLoaded) {
@@ -45,22 +37,15 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
           <RankingTable />
 
           {/* 액션 버튼들 - 정적 요소이므로 실제 버튼 표시 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+          <div className="max-w-md mx-auto">
             <Button
               variant="primary"
               size="lg"
+              fullWidth
               onClick={handleGoToRooms}
               className="flex items-center justify-center gap-2 hover-lift"
             >
               🏠 게임 방
-            </Button>
-            <Button
-              variant="disabled"
-              size="lg"
-              disabled
-              className="flex items-center justify-center gap-2"
-            >
-              💰 코인 전송
             </Button>
           </div>
         </main>
@@ -85,7 +70,7 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
         <RankingTable />
 
         {/* 액션 버튼들 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+        <div className="max-w-md mx-auto">
           <Button
             variant="primary"
             size="lg"
@@ -93,25 +78,9 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
             onClick={handleGoToRooms}
             className="flex items-center justify-center gap-2 hover-lift"
           >
-            🏠 게임 방
-          </Button>
-          <Button
-            variant="success"
-            size="lg"
-            fullWidth
-            onClick={() => setShowTransfer(true)}
-            className="flex items-center justify-center gap-2 hover-lift"
-          >
-            💰 코인 전송
+            🧩 게임 방 보기
           </Button>
         </div>
-
-        {/* 코인 전송 모달 */}
-        <CoinTransferModal
-          isOpen={showTransfer}
-          onClose={() => setShowTransfer(false)}
-          onSuccess={handleTransferSuccess}
-        />
       </div>
 
       <AppFooter />

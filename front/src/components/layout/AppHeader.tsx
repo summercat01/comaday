@@ -38,7 +38,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           onClick={logout}
           size="sm"
           variant="primary"
-          className="fixed top-6 right-8 z-50 shadow-sm"
+          className="absolute top-6 right-8 z-50 shadow-sm"
         >
           로그아웃
         </Button>
