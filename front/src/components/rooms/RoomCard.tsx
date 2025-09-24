@@ -10,22 +10,33 @@ interface RoomCardProps {
 }
 
 export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
+  // 방 번호에 따른 최대 인원 설정 (1-6번: 2명, 7-11번: 3명)
+  const getMaxMembers = (roomNumber: number) => {
+    return roomNumber >= 1 && roomNumber <= 6 ? 2 : 3;
+  };
+
+  const maxMembers = getMaxMembers(room.roomNumber);
+
   const getStatusColor = (memberCount: number, maxMembers: number) => {
     if (memberCount === 0) return 'var(--color-gray-dark)'; // 회색 - 0명
     if (memberCount === maxMembers) return 'var(--color-error)'; // 빨강 - 가득참
     return 'var(--color-success)'; // 초록 - 대기중
   };
 
-  const getStatusText = (memberCount: number, maxMembers: number) => {
-    if (memberCount === maxMembers) return '가득참';
-    return '대기중';
-  };
 
   return (
-    <Card hover className="flex flex-col min-h-[280px] sm:min-h-80">
+    <Card hover className="flex flex-col min-h-[280px] sm:min-h-80 relative">
+      {/* 상태 표시등 - 오른쪽 상단 */}
+      <div className="absolute top-3 right-3 z-10">
+        <div
+          className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-white shadow-lg"
+          style={{ backgroundColor: getStatusColor(room.memberCount, maxMembers) }}
+        ></div>
+      </div>
+
       {/* 방 헤더 */}
       <CardHeader>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-8">
           <CardTitle level={3} className="text-sm sm:text-lg mb-1 sm:mb-2 truncate">
             {room.name}
           </CardTitle>
@@ -39,41 +50,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
             >
               방 #{room.roomNumber}
             </span>
-            <div className="flex items-center gap-1">
-              <div
-                className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-white shadow-sm"
-                style={{ backgroundColor: getStatusColor(room.memberCount, room.maxMembers) }}
-              ></div>
-              <span className="text-xs sm:text-sm font-semibold" style={{ color: 'var(--color-text-title)' }}>
-                {getStatusText(room.memberCount, room.maxMembers)}
-              </span>
-            </div>
           </div>
         </div>
       </CardHeader>
 
-      {/* 방 정보 */}
-      <div className="mb-3 sm:mb-5 flex-1">
-        <h4 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-3" style={{ color: 'var(--color-text-title)' }}>
-          📊 방 정보
-        </h4>
-        <div className="space-y-1 sm:space-y-2">
-          <div className="flex justify-between items-center py-1 sm:py-2 px-2 sm:px-3 rounded-lg" 
-               style={{ backgroundColor: 'var(--color-gray)' }}>
-            <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text)' }}>최대 인원</span>
-            <span className="font-semibold text-xs sm:text-sm" style={{ color: 'var(--color-text-title)' }}>
-              {room.maxMembers}명
-            </span>
-          </div>
-          <div className="flex justify-between items-center py-1 sm:py-2 px-2 sm:px-3 rounded-lg" 
-               style={{ backgroundColor: 'var(--color-gray)' }}>
-            <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text)' }}>현재 인원</span>
-            <span className="font-semibold text-xs sm:text-sm" style={{ color: 'var(--color-primary-dark)' }}>
-              {room.memberCount}명
-            </span>
-          </div>
-        </div>
-      </div>
 
       {/* 인원 현황 */}
       <div className="mb-3 sm:mb-4 p-2 sm:p-4 rounded-xl border-l-4"
@@ -82,15 +62,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
              borderLeftColor: 'var(--color-primary)'
            }}>
         <div className="font-semibold mb-1 sm:mb-2 text-xs sm:text-sm" style={{ color: 'var(--color-text-title)' }}>
-          👥 {room.memberCount}/{room.maxMembers}
+          👥 {room.memberCount}/{maxMembers}
         </div>
         <div className="w-full bg-white rounded-full h-2 sm:h-3 overflow-hidden border" 
              style={{ borderColor: 'var(--color-border)' }}>
           <div 
             className="h-full transition-all duration-300 rounded-full"
             style={{ 
-              width: `${(room.memberCount / room.maxMembers) * 100}%`,
-              backgroundColor: room.memberCount >= room.maxMembers 
+              width: `${(room.memberCount / maxMembers) * 100}%`,
+              backgroundColor: room.memberCount >= maxMembers 
                 ? 'var(--color-error)' 
                 : room.memberCount > 0 
                   ? 'var(--color-success)' 
@@ -103,13 +83,13 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
       {/* 입장 버튼 */}
       <div className="mt-auto pt-2 sm:pt-4">
         <Button
-          variant={room.memberCount >= room.maxMembers ? 'disabled' : 'primary'}
+          variant={room.memberCount >= maxMembers ? 'disabled' : 'primary'}
           size="sm"
           fullWidth
           onClick={() => onJoinRoom(room)}
-          disabled={room.memberCount >= room.maxMembers}
+          disabled={room.memberCount >= maxMembers}
         >
-          {room.memberCount >= room.maxMembers ? '🚫 가득참' : '🚪 입장'}
+          {room.memberCount >= maxMembers ? '🚫 가득참' : '🚪 입장'}
         </Button>
       </div>
     </Card>

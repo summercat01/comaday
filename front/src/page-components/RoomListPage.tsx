@@ -22,8 +22,6 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
   useEffect(() => {
     if (isLoaded) {
       loadRooms();
-      const interval = setInterval(loadRooms, 5000); // 5초마다 새로고침
-      return () => clearInterval(interval);
     }
   }, [isLoaded]);
 
@@ -130,13 +128,6 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom }) => {
         ))}
       </div>
 
-      {/* 새로고침 안내 */}
-      <div className="text-center mt-4 sm:mt-8 p-3 sm:p-4 rounded-xl" 
-           style={{ backgroundColor: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)' }}>
-        <p className="text-xs sm:text-sm" style={{ color: 'var(--color-success)' }}>
-          💡 방 목록은 5초마다 자동으로 새로고침됩니다
-        </p>
-      </div>
     </div>
   );
 };
