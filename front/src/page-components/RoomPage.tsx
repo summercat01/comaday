@@ -134,7 +134,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     // popstate 이벤트로 브라우저 뒤로가기/앞으로가기 감지
     const handlePopState = (event: PopStateEvent) => {
       event.preventDefault();
-      const confirmLeave = confirm('정말 방에서 나가시겠습니까?');
+      const confirmLeave = confirm('현재 방에서 퇴장하시겠습니까?');
       
       if (confirmLeave) {
         // 방에서 나가기 API 호출
@@ -227,7 +227,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
   const handleLeaveRoom = async () => {
     if (!currentUser) return;
     
-    if (window.confirm('정말 방에서 나가시겠습니까?')) {
+    if (window.confirm('현재 방에서 퇴장하시겠습니까?')) {
       try {
         const result = await roomService.leaveRoom(roomCode, currentUser.id);
         console.log('방 나가기 성공:', result.message);
@@ -416,8 +416,19 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
     <div className="min-h-screen p-3" style={{ backgroundColor: 'var(--color-background)' }}>
       <div className="max-w-md mx-auto">
         {/* 상단 헤더 */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center mb-6 gap-3">
+          {/* 뒤로가기 버튼 */}
+          <Button 
+            variant="primary" 
+            size="sm" 
+            onClick={handleLeaveRoom}
+            className="flex items-center justify-center w-8 h-8 p-0"
+          >
+            ←
+          </Button>
+          
+          {/* 방 정보 */}
+          <div className="flex items-center gap-3 flex-1">
             <span 
               className="inline-block px-3 py-1 rounded-full text-sm font-semibold"
               style={{ 
@@ -427,7 +438,7 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
             >
               No.{roomNumber}
             </span>
-            <div>
+            <div className="flex-1">
               {isEditingName ? (
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -459,12 +470,6 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
                 </h1>
               )}
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="danger" size="sm" onClick={handleLeaveRoom}>
-              퇴장
-            </Button>
           </div>
         </div>
         
