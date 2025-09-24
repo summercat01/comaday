@@ -54,6 +54,16 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
         </div>
       </CardHeader>
 
+      {/* 게임 정보 */}
+      <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg"
+           style={{ backgroundColor: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)' }}>
+        <div className="font-semibold mb-1 text-xs sm:text-sm" style={{ color: 'var(--color-text-title)' }}>
+          🎮 게임
+        </div>
+        <div className="text-xs sm:text-sm" style={{ color: 'var(--color-success)' }}>
+          {room.gameName || '게임 미정'}
+        </div>
+      </div>
 
       {/* 인원 현황 */}
       <div className="mb-3 sm:mb-4 p-2 sm:p-4 rounded-xl border-l-4"

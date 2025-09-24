@@ -45,6 +45,7 @@ export interface LobbyRoom {
   roomCode: string;
   roomNumber: number;
   name: string;
+  gameName?: string; // 게임명 추가
   memberCount: number;
   maxMembers: number;
 }
