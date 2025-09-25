@@ -3,6 +3,9 @@
 import React from 'react';
 import { Card, CardTitle, Button } from '../ui';
 
+// 이미지 캐시 버스팅을 위한 버전 상수
+const IMAGE_VERSION = '20241225_v2';
+
 interface RoomLocationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -53,7 +56,7 @@ export const RoomLocationModal: React.FC<RoomLocationModalProps> = ({
           {/* 방 위치 이미지 */}
           <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
             <img
-              src="/room-layout.png"
+              src={`/room-layout.png?v=${IMAGE_VERSION}`}
               alt="게임 방 배치도"
               className="w-full h-auto rounded-lg shadow-lg max-w-full object-contain"
               style={{ maxHeight: '500px' }}
@@ -87,16 +90,6 @@ export const RoomLocationModal: React.FC<RoomLocationModalProps> = ({
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* 추가 안내 정보 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-bold text-blue-800 mb-2">💡 이용 안내</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• 1-6번 방: 최대 2명까지 이용 가능</li>
-              <li>• 7-11번 방: 최대 3명까지 이용 가능</li>
-              <li>• 방 번호를 확인하고 원하는 방을 선택해주세요</li>
-            </ul>
           </div>
         </div>
       </Card>
