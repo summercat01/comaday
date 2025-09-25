@@ -1,0 +1,1 @@
+export { RoomLocationModal } from './RoomLocationModal';

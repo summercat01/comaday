@@ -7,6 +7,7 @@ import { LobbyRoom } from '../types/room';
 import { Card, CardTitle, Button } from '../components/ui';
 import { LoadingSpinner } from '../components/layout';
 import { RoomCard } from '../components/rooms';
+import { RoomLocationModal } from '../components/location';
 
 interface RoomListPageProps {
   onJoinRoom: (roomCode: string) => void;
@@ -19,6 +20,7 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom, onGoBack }) => 
   const [rooms, setRooms] = useState<LobbyRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   useEffect(() => {
     loadRooms();
@@ -157,6 +159,16 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom, onGoBack }) => 
         <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--color-text-title)' }}>
           🎲 게임 방 목록
         </h1>
+
+        {/* 방 위치 확인 버튼 - 절대 위치 우측 상단 */}
+        <Button
+          variant="success"
+          size="sm"
+          onClick={() => setShowLocationModal(true)}
+          className="absolute right-0 flex items-center justify-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+        >
+           위치 보기 <span className="hidden sm:inline">위치확인</span>
+        </Button>
       </div>
 
       <Card className="text-center mb-6 sm:mb-8">
@@ -174,6 +186,12 @@ const RoomListPage: React.FC<RoomListPageProps> = ({ onJoinRoom, onGoBack }) => 
           />
         ))}
       </div>
+
+      {/* 방 위치 확인 모달 */}
+      <RoomLocationModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+      />
 
     </div>
   );

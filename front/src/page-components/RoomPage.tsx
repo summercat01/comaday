@@ -10,6 +10,7 @@ import { Room } from '../types/room';
 import { useUser } from '../components/providers';
 import { Card, CardTitle, Button, Input } from '../components/ui';
 import { LoadingSpinner } from '../components/layout';
+import { getMappedRoomNumber } from '../utils/roomUtils';
 
 interface RoomPageProps {
   roomCode: string;
@@ -439,7 +440,8 @@ const RoomPage: React.FC<RoomPageProps> = ({ roomCode, onLeaveRoom }) => {
 
   const activeMembers = room.members || [];
   const currentMember = activeMembers.find(m => m.userId === currentUser.id);
-  const roomNumber = parseInt(room.roomCode.replace('ROOM', '').replace(/^0+/, ''));
+  const originalRoomNumber = parseInt(room.roomCode.replace('ROOM', '').replace(/^0+/, ''));
+  const roomNumber = getMappedRoomNumber(originalRoomNumber);
   const isMember = !!currentMember;
 
   return (

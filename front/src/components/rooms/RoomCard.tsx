@@ -3,6 +3,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, Button } from '../ui';
 import { LobbyRoom } from '../../types/room';
+import { getMappedRoomNumber } from '../../utils/roomUtils';
 
 interface RoomCardProps {
   room: LobbyRoom;
@@ -15,6 +16,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
     return roomNumber >= 1 && roomNumber <= 6 ? 2 : 3;
   };
 
+  const mappedRoomNumber = getMappedRoomNumber(room.roomNumber);
   const maxMembers = getMaxMembers(room.roomNumber);
 
   const getStatusColor = (memberCount: number, maxMembers: number) => {
@@ -45,7 +47,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoinRoom }) => {
                 color: 'var(--color-secondary)' 
               }}
             >
-              No.{room.roomNumber}
+              No.{mappedRoomNumber}
             </span>
           </div>
           <CardTitle level={3} className="text-sm sm:text-lg truncate">

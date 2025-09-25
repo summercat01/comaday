@@ -1,11 +1,12 @@
 'use client'
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "./providers";
 import { LoginForm } from "./auth";
 import { RankingTable } from "./ranking";
 import { AppHeader, AppFooter, LoadingSpinner, SkeletonLoader } from "./layout";
+import { RoomLocationModal } from "./location";
 import { Button } from "./ui";
 
 // Main App Content
@@ -16,6 +17,7 @@ interface MainContentProps {
 const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
   const { currentUser, isLoaded, login } = useUser();
   const router = useRouter();
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   const handleGoToRooms = () => {
     if (onGoToRooms) {
@@ -23,6 +25,10 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
     } else {
       router.push('/rooms');
     }
+  };
+
+  const handleShowLocation = () => {
+    setShowLocationModal(true);
   };
 
 
@@ -37,7 +43,7 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
           <RankingTable />
 
           {/* 액션 버튼들 - 정적 요소이므로 실제 버튼 표시 */}
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto space-y-4">
             <Button
               variant="primary"
               size="lg"
@@ -45,7 +51,16 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
               onClick={handleGoToRooms}
               className="flex items-center justify-center gap-2 hover-lift"
             >
-              🏠 게임 방
+              🧩 게임 방 보기
+            </Button>
+            <Button
+              variant="success"
+              size="lg"
+              fullWidth
+              onClick={handleShowLocation}
+              className="flex items-center justify-center gap-2 hover-lift"
+            >
+              🗺️ 방 위치 확인하기
             </Button>
           </div>
         </main>
@@ -70,7 +85,7 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
         <RankingTable />
 
         {/* 액션 버튼들 */}
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto space-y-4">
           <Button
             variant="primary"
             size="lg"
@@ -80,8 +95,23 @@ const MainContent: React.FC<MainContentProps> = ({ onGoToRooms }) => {
           >
             🧩 게임 방 보기
           </Button>
+          <Button
+            variant="success"
+            size="lg"
+            fullWidth
+            onClick={handleShowLocation}
+            className="flex items-center justify-center gap-2 hover-lift"
+          >
+            🗺️ 방 위치 확인하기
+          </Button>
         </div>
       </div>
+
+      {/* 방 위치 확인 모달 */}
+      <RoomLocationModal
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+      />
 
       <AppFooter />
     </div>
