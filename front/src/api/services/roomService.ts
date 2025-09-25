@@ -95,6 +95,14 @@ export const roomService = {
   },
 
   /**
+   * 방 현황(전체) 조회 - 관리자용 (멤버 포함)
+   */
+  async getAllRoomsWithMembers(limit: number = 100): Promise<Room[]> {
+    const response = await this.getRooms(1, limit);
+    return response.rooms;
+  },
+
+  /**
    * 대기방 상태 조회 (간소화된 방 정보)
    * GET /rooms/lobby-status
    */
@@ -149,6 +157,19 @@ export const roomService = {
     } catch (error: any) {
       const apiError: ApiError = error.response?.data;
       throw new Error(apiError?.message || '방 나가기에 실패했습니다.');
+    }
+  },
+
+  /**
+   * 관리자 강제 퇴장 - 기존 방 나가기 API 활용
+   */
+  async forceLeaveMember(roomCode: string, userId: number): Promise<{ message?: string }> {
+    try {
+      const response = await axiosInstance.post<{ message?: string }>(`${API_ENDPOINTS.rooms}/${roomCode}/leave`, { userId });
+      return response.data;
+    } catch (error: any) {
+      const apiError: ApiError = error.response?.data;
+      throw new Error(apiError?.message || '사용자 퇴장 처리에 실패했습니다.');
     }
   },
 

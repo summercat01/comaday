@@ -1,10 +1,11 @@
 'use client'
 
 // src/pages/AdminPage.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { userService } from "../api/services/userService";
-import { coinService } from "../api/services/coinService";
+import { roomService } from "../api/services/roomService";
 import { User } from "../types/user";
+import { Room, RoomMember } from "../types/room";
 
 // 관리자 페이지에서 사용할 사용자 타입 (백엔드 API에 맞게)
 interface AdminUser extends User {}
@@ -22,6 +23,14 @@ const AdminPage = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string>("");
+
+  // 방 현황 상태
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState<boolean>(false);
+  const [roomsError, setRoomsError] = useState<string>("");
+  const [roomsRefreshing, setRoomsRefreshing] = useState<boolean>(false);
+  const [lastRoomsUpdatedAt, setLastRoomsUpdatedAt] = useState<Date | null>(null);
+  const [kickingMemberId, setKickingMemberId] = useState<number | null>(null);
 
   // 임시 입력값 저장을 위한 상태
   const [inputValues, setInputValues] = useState<{ [key: number]: string }>({});
@@ -46,43 +55,92 @@ const AdminPage = () => {
     }
   };
 
-  // 백엔드에서 사용자 데이터 불러오기
-  useEffect(() => {
-    // 인증된 경우에만 데이터 로드
-    if (authenticated) {
-      const fetchUsers = async () => {
-        setLoading(true);
-        setLoadError("");
-        try {
-          const users = await userService.getAllUsers();
-          setUsers(users);
-        } catch (error) {
-          console.error('사용자 데이터 불러오기 오류:', error);
-          setLoadError("사용자 데이터를 불러오는 중 오류가 발생했습니다.");
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchUsers();
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const users = await userService.getAllUsers();
+      setUsers(users);
+    } catch (err: any) {
+      console.error("사용자 데이터 불러오기 오류:", err);
+      setLoadError(err?.message || "사용자 데이터를 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
-  }, [authenticated]);
+  }, []);
+
+  const fetchRooms = useCallback(
+    async (options: { showLoading?: boolean; recordRefresh?: boolean } = {}) => {
+      const { showLoading = true, recordRefresh = false } = options;
+
+      if (showLoading) {
+        setRoomsLoading(true);
+      }
+      if (recordRefresh) {
+        setRoomsRefreshing(true);
+      }
+      if (!showLoading && !recordRefresh) {
+        // background refresh
+        setRoomsError((prev) => prev);
+      } else {
+        setRoomsError("");
+      }
+
+      try {
+        const roomList = await roomService.getAllRoomsWithMembers();
+        setRooms(roomList);
+        setLastRoomsUpdatedAt(new Date());
+      } catch (err: any) {
+        console.error("방 데이터 불러오기 오류:", err);
+        setRoomsError(err?.message || "방 데이터를 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        if (showLoading) {
+          setRoomsLoading(false);
+        }
+        if (recordRefresh) {
+          setRoomsRefreshing(false);
+        }
+      }
+    },
+    []
+  );
+
+  // 백엔드에서 사용자 및 방 데이터를 불러오기
+  useEffect(() => {
+    if (!authenticated) {
+      return;
+    }
+
+    fetchUsers();
+    fetchRooms();
+
+    const interval = setInterval(() => {
+      fetchRooms({ showLoading: false });
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [authenticated, fetchUsers, fetchRooms]);
 
   // 입력값 변경 처리
   const handleInputChange = (userId: number, value: string) => {
-    setInputValues({
-      ...inputValues,
-      [userId]: value,
-    });
+    const parsedValue = value.replace(/[^0-9-]/g, "");
+    setInputValues((prevValues) => ({
+      ...prevValues,
+      [userId]: parsedValue,
+    }));
   };
 
   // 코인 추가/차감 처리
   const handleCoinUpdate = async (action: string, userId: number) => {
-    const amount = parseInt(inputValues[userId] || "0");
+    const rawInput = inputValues[userId] || "0";
+    const amount = parseInt(rawInput, 10);
     if (isNaN(amount) || amount <= 0) {
       alert("유효한 코인 수량을 입력해주세요.");
       return;
     }
-    
+
     try {
       // 현재 사용자 정보 가져오기
       const currentUser = users.find(u => u.id === userId);
@@ -102,11 +160,11 @@ const AdminPage = () => {
       }
 
       // 코인 수량 업데이트
-      await userService.updateUserCoins(userId, newCoinCount);
+      const delta = action === "추가" ? amount : -amount;
+      await userService.updateUserCoins(userId, delta);
 
       // 사용자 목록 새로고침
-      const updatedUsers = await userService.getAllUsers();
-      setUsers(updatedUsers);
+      await fetchUsers();
 
       // 입력값 초기화
       setInputValues(prev => ({
@@ -121,10 +179,55 @@ const AdminPage = () => {
     }
   };
 
+  const handleRefreshRooms = () => {
+    fetchRooms({ showLoading: false, recordRefresh: true });
+  };
+
+  const handleKickMember = async (room: Room, member: RoomMember) => {
+    const targetName = member.user?.username || `사용자 #${member.userId}`;
+
+    const confirmed = window.confirm(
+      `${room.name}(${room.roomCode})에서 ${targetName}님을 퇴장시키겠습니까?`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setKickingMemberId(member.id);
+      await roomService.forceLeaveMember(room.roomCode, member.userId);
+      await Promise.all([
+        fetchRooms({ showLoading: false }),
+        fetchUsers(),
+      ]);
+      alert(`${targetName}님을 방에서 퇴장시켰습니다.`);
+    } catch (err: any) {
+      console.error("사용자 퇴장 오류:", err);
+      alert(err?.message || "사용자를 퇴장시키는 중 오류가 발생했습니다.");
+    } finally {
+      setKickingMemberId(null);
+    }
+  };
+
   // 로그아웃 처리
   const handleLogout = () => {
     setAuthenticated(false);
     setPassword("");
+  };
+
+  const sortedRooms = useMemo(() => {
+    return [...rooms].sort((a, b) => a.roomCode.localeCompare(b.roomCode));
+  }, [rooms]);
+
+  const formatDateTime = (value?: string | Date | null) => {
+    if (!value) {
+      return "-";
+    }
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
+    return date.toLocaleString();
   };
 
   // 비밀번호 입력 화면
@@ -279,6 +382,117 @@ const AdminPage = () => {
             </div>
           </div>
         )}
+
+        {/* 방 현황 섹션 */}
+        <div className="card">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+            <div>
+              <h2 className="card-title">🏠 방 현황</h2>
+              <p className="text-sm text-gray-500">
+                전체 방 수: {sortedRooms.length}개 | 활성 방: {sortedRooms.filter((room) => (room.members?.length || 0) > 0).length}개
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              {lastRoomsUpdatedAt && (
+                <span className="text-gray-500">
+                  마지막 업데이트: {formatDateTime(lastRoomsUpdatedAt)}
+                </span>
+              )}
+              <button
+                onClick={handleRefreshRooms}
+                className="btn-primary text-sm px-3 py-2"
+                disabled={roomsRefreshing}
+              >
+                {roomsRefreshing ? "새로고침 중..." : "🔄 새로고침"}
+              </button>
+            </div>
+          </div>
+
+          {roomsError && (
+            <div className="message-error mb-4">{roomsError}</div>
+          )}
+
+          {roomsLoading ? (
+            <div className="card text-center">
+              <div className="loading-spinner mx-auto mb-4"></div>
+              <p className="text-gray-600">방 데이터를 불러오는 중입니다...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sortedRooms.map((room) => {
+                const memberCount = room.members?.length || 0;
+                const occupancyRatio = room.maxMembers ? memberCount / room.maxMembers : 0;
+                const occupancyBadgeClass = occupancyRatio >= 1
+                  ? "bg-red-100 text-red-700"
+                  : occupancyRatio >= 0.75
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-green-100 text-green-700";
+
+                return (
+                  <div key={room.id} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
+                    <div className="flex flex-wrap justify-between gap-3">
+                      <div>
+                        <p className="text-xl font-semibold text-coma-dark">
+                          {room.name}
+                          <span className="ml-2 text-sm text-gray-500">({room.roomCode})</span>
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          게임명: {room.gameName ? room.gameName : "미설정"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          시작 시간: {formatDateTime(room.startedAt)}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <span className={`px-3 py-1 rounded-full font-semibold ${occupancyBadgeClass}`}>
+                          {memberCount}/{room.maxMembers}명
+                        </span>
+                      </div>
+                    </div>
+
+                    {memberCount > 0 ? (
+                      <div className="mt-4 space-y-3">
+                        {room.members?.map((member) => {
+                          const displayName = member.user?.username || `사용자 #${member.userId}`;
+                          return (
+                            <div
+                              key={member.id}
+                              className="flex flex-wrap justify-between items-center gap-3 border border-gray-100 rounded-lg p-3 bg-gray-50"
+                            >
+                              <div>
+                                <p className="font-semibold text-coma-dark">{displayName}</p>
+                                <p className="text-xs text-gray-500">
+                                  입장: {formatDateTime(member.joinedAt)}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  사용자 ID: {member.userId}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm text-gray-600">
+                                  보유 코인: {member.user?.coinCount?.toLocaleString() ?? "-"}
+                                </span>
+                                <button
+                                  className="btn-danger text-xs px-3 py-2"
+                                  onClick={() => handleKickMember(room, member)}
+                                  disabled={kickingMemberId === member.id}
+                                >
+                                  {kickingMemberId === member.id ? "퇴장 중..." : "퇴장"}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-gray-500">현재 참가자가 없습니다.</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* 거래 제한 설정 섹션 */}
         <div className="card">

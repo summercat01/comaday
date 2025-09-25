@@ -56,10 +56,10 @@ export const userService = {
    * 사용자 코인 수량 직접 수정 (관리자용)
    * PUT /users/{id}/coins
    */
-  async updateUserCoins(id: number, coinCount: number): Promise<User> {
+  async updateUserCoins(id: number, amount: number): Promise<User> {
     try {
       const response = await axiosInstance.put<User>(`${API_ENDPOINTS.users}/${id}/coins`, {
-        coinCount,
+        amount,
       });
       return response.data;
     } catch (error: any) {
@@ -118,7 +118,12 @@ export const userService = {
   async updateUser(userId: number, data: Partial<User>): Promise<User> {
     // 현재 백엔드 API에서는 사용자 코인만 수정 가능
     if (data.coinCount !== undefined) {
-      return this.updateUserCoins(userId, data.coinCount);
+      const currentUser = await this.getUserById(userId);
+      const amount = data.coinCount - currentUser.coinCount;
+      if (amount === 0) {
+        return currentUser;
+      }
+      return this.updateUserCoins(userId, amount);
     }
     throw new Error('지원하지 않는 사용자 정보 업데이트입니다.');
   },
