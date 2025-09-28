@@ -115,8 +115,8 @@ export class CoinsService {
       throw new InsufficientBalanceException(ERROR_MESSAGES.COIN.INSUFFICIENT_BALANCE);
     }
 
-    // 방 기반 거래 제한 체크
-    const canTransact = await this.checkRoomTransactionLimit(senderId, roomCode);
+    // 방 기반 연속 거래 제한 체크
+    const canTransact = await this.checkRoomTransactionLimit(senderId, receiverId, roomCode);
     if (!canTransact) {
       throw new RoomTransactionLimitException(ERROR_MESSAGES.COIN.ROOM_TRANSACTION_LIMIT);
     }
@@ -193,8 +193,9 @@ export class CoinsService {
       throw new NotRoomMemberException(ERROR_MESSAGES.ROOM.NOT_MEMBER);
     }
 
-    // 방 기반 거래 제한 체크
-    const canTransact = await this.checkRoomTransactionLimit(senderId, roomCode);
+    // 일괄 전송도 연속 거래 제한 적용 (주요 수신자 기준)
+    const primaryReceiverId = transfers[0].receiverId; // 첫 번째 수신자를 기준으로 체크
+    const canTransact = await this.checkRoomTransactionLimit(senderId, primaryReceiverId, roomCode);
     if (!canTransact) {
       throw new RoomTransactionLimitException(ERROR_MESSAGES.COIN.ROOM_TRANSACTION_LIMIT);
     }
@@ -268,11 +269,58 @@ export class CoinsService {
   }
 
   /**
-   * 방에서 사용자의 거래 제한 체크 (보내기 + 받기 통합 2회까지)
+   * 방에서 연속 거래 제한 체크 (동일한 상대와 3회 연속 거래 방지)
    */
-  async checkRoomTransactionLimit(userId: number, roomCode: string): Promise<boolean> {
-    const transactionCount = await this.countUserTransactionsInRoom(userId, roomCode);
-    return transactionCount < 2; // 2회까지만 허용
+  async checkRoomTransactionLimit(userId: number, targetUserId: number, roomCode: string): Promise<boolean> {
+    // 최근 3개 groupId 조회 (해당 사용자의 거래 시간 기준)
+    const recentGroupIds = await this.coinTransactionRepository
+      .createQueryBuilder('transaction')
+      .select('transaction.groupId', 'groupId')
+      .addSelect('MAX(transaction.createdAt)', 'latestTransaction')
+      .where('(transaction.senderId = :userId OR transaction.receiverId = :userId)', { userId })
+      .andWhere('transaction.roomCode = :roomCode', { roomCode })
+      .andWhere('transaction.groupId IS NOT NULL')
+      .groupBy('transaction.groupId')
+      .orderBy('MAX(transaction.createdAt)', 'DESC')
+      .limit(3)
+      .getRawMany();
+
+    // 3건 미만이면 허용
+    if (recentGroupIds.length < 3) {
+      return true;
+    }
+
+    // 각 groupId에서 실제 거래 상대방들 추출
+    const partnerSets = await Promise.all(
+      recentGroupIds.map(async (group) => {
+        // 해당 groupId에서 userId가 참여한 모든 거래 조회
+        const transactions = await this.coinTransactionRepository.find({
+          where: [
+            { groupId: group.groupId, senderId: userId, roomCode },
+            { groupId: group.groupId, receiverId: userId, roomCode }
+          ]
+        });
+
+        // 거래 상대방 ID들 추출 (Set으로 중복 제거)
+        const partners = new Set<number>();
+        transactions.forEach(transaction => {
+          if (transaction.senderId === userId) {
+            partners.add(transaction.receiverId);
+          } else {
+            partners.add(transaction.senderId);
+          }
+        });
+
+        return partners;
+      })
+    );
+
+    // 최근 3번 거래가 모두 targetUserId만과의 거래인지 확인
+    const allSamePartner = partnerSets.every(partnerSet => {
+      return partnerSet.size === 1 && partnerSet.has(targetUserId);
+    });
+
+    return !allSamePartner;
   }
 
   /**

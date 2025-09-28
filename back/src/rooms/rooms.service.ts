@@ -77,13 +77,19 @@ export class RoomsService {
       throw new BadRequestException('방이 가득 찼습니다.');
     }
 
-    // 이미 참가 중인지 확인
-    const existingMember = await this.roomMemberRepository.findOne({
-      where: { roomId: room.id, userId }
+    // 사용자가 이미 다른 방에 참가 중인지 확인
+    const existingMemberInAnyRoom = await this.roomMemberRepository.findOne({
+      where: { userId },
+      relations: ['room']
     });
 
-    if (existingMember) {
-      throw new BadRequestException('이미 참가 중인 방입니다.');
+    if (existingMemberInAnyRoom) {
+      // 같은 방이면 중복 입장 에러
+      if (existingMemberInAnyRoom.roomId === room.id) {
+        throw new BadRequestException('이미 참가 중인 방입니다.');
+      }
+      // 다른 방이면 에러 (명시적으로 나가도록 유도)
+      throw new BadRequestException(`이미 다른 방(${existingMemberInAnyRoom.room.roomCode})에 참가 중입니다. 먼저 해당 방에서 나가주세요.`);
     }
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -122,12 +128,11 @@ export class RoomsService {
     });
     
     if (remainingMembers === 0) {
-      // 시스템 룸(ROOM01-ROOM11)은 이름과 게임명 초기화, 사용자 생성 방은 삭제
+      // 시스템 룸(ROOM01-ROOM11)은 이름과 게임명을 원래대로 초기화
       if (room.roomCode.match(/^ROOM\d{2}$/)) {
         await this.resetRoomToOriginal(room.id);
-      } else {
-        await this.deleteRoom(room.id);
       }
+      // 현재는 시스템 룸만 존재하므로 else 케이스 없음
     }
   }
 
@@ -288,14 +293,30 @@ export class RoomsService {
 
     console.log('🏗️ 오프라인 방에 대응하는 11개의 온라인 룸을 생성합니다...');
 
+    // 방 번호 매핑 (방 순서 → 실제 번호)
+    const roomNumbers = {
+      1: 1,   // 1번방 = 1
+      2: 18,  // 2번방 = 18
+      3: 19,  // 3번방 = 19
+      4: 20,  // 4번방 = 20
+      5: 21,  // 5번방 = 21
+      6: 14,  // 6번방 = 14
+      7: 5,   // 7번방 = 5
+      8: 6,   // 8번방 = 6
+      9: 7,   // 9번방 = 7
+      10: 25, // 10번방 = 25
+      11: 26  // 11번방 = 26
+    };
+
     for (let i = 1; i <= 11; i++) {
         // 1-6번 방: 최대 2명, 7-11번 방: 최대 3명
         const maxMembers = i <= 6 ? 2 : 3;
+        const actualNumber = roomNumbers[i];
         
         const room = this.roomRepository.create({
           roomCode: `ROOM${i.toString().padStart(2, '0')}`, // ROOM01, ROOM02, ... ROOM11
-          name: `${i}번 방`,
-          originalName: `${i}번 방`, // 초기화용 원래 이름 저장
+          name: `${actualNumber}번 방`,
+          originalName: `${actualNumber}번 방`, // 초기화용 원래 이름 저장
           gameName: null, // 게임명은 사용자가 설정
           originalGameName: null, // 초기화용 원래 게임 이름 저장
           maxMembers: maxMembers,
@@ -303,7 +324,7 @@ export class RoomsService {
         });
 
       await this.roomRepository.save(room);
-      console.log(`✅ ${i}번 방 (ROOM${i.toString().padStart(2, '0')}) 생성 완료`);
+      console.log(`✅ ${actualNumber}번 방 (ROOM${i.toString().padStart(2, '0')}) 생성 완료`);
     }
 
     console.log('🎉 모든 기본 룸 생성이 완료되었습니다!');

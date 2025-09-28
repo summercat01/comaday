@@ -36,31 +36,4 @@ export const authService = {
     }
   },
 
-  /**
-   * 사용자 등록 (명시적 계정 생성)
-   * POST /users/register
-   */
-  async register(data: LoginRequest): Promise<User> {
-    try {
-      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.users}/register`, data);
-      return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data;
-      throw new Error(apiError?.message || '회원가입에 실패했습니다.');
-    }
-  },
-
-  /**
-   * 게스트 로그인
-   * POST /users/guest-login
-   */
-  async guestLogin(data: LoginRequest): Promise<User> {
-    try {
-      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.users}/guest-login`, data);
-      return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data;
-      throw new Error(apiError?.message || '게스트 로그인에 실패했습니다.');
-    }
-  },
 };

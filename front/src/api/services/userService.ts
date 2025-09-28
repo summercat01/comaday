@@ -82,22 +82,6 @@ export const userService = {
     }
   },
 
-  /**
-   * 게스트 로그인 (호환성 유지)
-   * POST /users/guest-login
-   */
-  async guestLogin(username: string, password: string): Promise<User> {
-    try {
-      const response = await axiosInstance.post<User>(`${API_ENDPOINTS.users}/guest-login`, {
-        username,
-        password,
-      });
-      return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data;
-      throw new Error(apiError?.message || '게스트 로그인에 실패했습니다.');
-    }
-  },
 
   /**
    * 현재 사용자 정보 조회 (호환성 유지)

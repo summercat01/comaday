@@ -1,8 +1,14 @@
 // 개발 환경에서는 Next.js 프록시 사용, 프로덕션에서는 직접 API 호출
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-//개발 환경에서도 .env.local 값을 사용하고 싶다면 아래 주석을 해제하세요
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+// 강제로 HTTPS 사용 (Mixed Content 에러 방지)
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://comaday.duckdns.org';
+
+// 디버깅: 환경 변수 확인 (개발 시에만 표시)
+if (process.env.NODE_ENV === 'development') {
+  console.log('API_BASE_URL:', process.env.NEXT_PUBLIC_API_URL);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+}
 
 // // 현재 설정: 개발 환경에서는 프록시, 프로덕션에서는 직접 호출
 // export const API_BASE_URL = isDevelopment 

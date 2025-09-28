@@ -36,7 +36,7 @@ export const ERROR_MESSAGES = {
     SAME_USER_TRANSFER: '자신에게는 코인을 전송할 수 없습니다.',
     TRANSACTION_LIMIT_EXCEEDED: '거래 제한에 걸렸습니다. 잠시 후 다시 시도해주세요.',
     CONSECUTIVE_TRANSACTION_LIMIT: '동일한 상대와 연속으로 거래할 수 없습니다.',
-    ROOM_TRANSACTION_LIMIT: '이 방에서 더 이상 거래할 수 없습니다. (2회 제한)',
+    ROOM_TRANSACTION_LIMIT: '동일한 상대와 3회 연속 거래는 제한됩니다. 다른 사용자와 거래 후 다시 시도해주세요.',
     GLOBAL_TRANSACTION_LIMIT: '전역 거래 제한에 도달했습니다.',
     TRANSFER_FAILED: '코인 전송에 실패했습니다.',
     BULK_TRANSFER_FAILED: '일괄 거래에 실패했습니다.',

@@ -52,17 +52,18 @@ export class CoinsController {
   }
 
   /**
-   * 방에서 사용자의 거래 제한 체크
+   * 방에서 사용자의 연속 거래 제한 체크
    */
-  @Get('room-limit/:userId/:roomCode')
+  @Get('room-limit/:userId/:targetUserId/:roomCode')
   async checkRoomTransactionLimit(
     @Param('userId') userId: string,
+    @Param('targetUserId') targetUserId: string,
     @Param('roomCode') roomCode: string,
   ): Promise<{ canTransact: boolean; message: string }> {
-    const canTransact = await this.coinsService.checkRoomTransactionLimit(+userId, roomCode);
+    const canTransact = await this.coinsService.checkRoomTransactionLimit(+userId, +targetUserId, roomCode);
     return {
       canTransact,
-      message: canTransact ? '거래 가능' : '이 방에서 더 이상 거래할 수 없습니다. (2회 제한)'
+      message: canTransact ? '거래 가능' : '동일한 상대와 3회 연속 거래는 제한됩니다. 다른 사용자와 거래 후 다시 시도해주세요.'
     };
   }
 
